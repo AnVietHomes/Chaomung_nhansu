@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-width=1.0">
     <title>Tạo Ảnh Welcome On Board AVH</title>
-    <!-- Nhúng font Barlow từ Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +23,6 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            /* Thêm thanh cuộn nếu màn hình nhỏ */
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -58,6 +56,34 @@
             font-family: 'Barlow', Arial, sans-serif;
             font-size: 14px;
         }
+        
+        /* CSS cho box nhập mã nhân viên cố định AVH */
+        .input-group {
+            display: flex;
+            align-items: stretch;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .input-group-addon {
+            padding: 8px 12px;
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 700;
+            border-right: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .input-group input:focus {
+            outline: none;
+        }
+
         button {
             width: 100%;
             padding: 12px;
@@ -104,10 +130,12 @@
             </select>
         </div>
 
-        <!-- Box nhập Mã nhân viên được thêm mới -->
         <div class="form-group">
             <label>Mã nhân viên:</label>
-            <input type="text" id="empCode" value="AVHXXX" oninput="drawCanvas()">
+            <div class="input-group">
+                <span class="input-group-addon">AVH</span>
+                <input type="text" id="empCodeSuffix" value="XXX" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
+            </div>
         </div>
 
         <div class="form-group">
@@ -216,8 +244,9 @@
             const departmentText = document.getElementById('departmentText').value.toUpperCase();
             const branchSelect = document.getElementById('branchSelect').value.toUpperCase();
             
-            // Lấy thêm trường Mã nhân viên
-            const empCode = document.getElementById('empCode').value.toUpperCase();
+            // Lấy phần đuôi mã nhân viên và tự động gắn chữ AVH lên trước
+            const empCodeSuffix = document.getElementById('empCodeSuffix').value.toUpperCase();
+            const fullEmpCode = "AVH" + empCodeSuffix;
             
             const joinDate = document.getElementById('joinDate').value;
             const dob = document.getElementById('dob').value;
@@ -233,14 +262,12 @@
             ctx.fillText(departmentText, 780, 550);
             ctx.fillText(branchSelect, 780, 582);
 
-            // Căn chỉnh lại khoảng cách (startY) đẩy lên một chút để đủ chỗ cho 5 dòng
             ctx.font = '400 22px "Barlow"';
             const labelX = 540;
             const valueX = 1025; 
-            let startY = 650; // Đẩy lên cao hơn code cũ một chút
+            let startY = 650;
             const lineSpacing = 42;
 
-            // In phần Tiêu đề
             ctx.textAlign = 'left';
             ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY);
             ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing);
@@ -248,9 +275,8 @@
             ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3);
             ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
 
-            // In phần Giá trị
             ctx.textAlign = 'right';
-            ctx.fillText(empCode, valueX, startY);
+            ctx.fillText(fullEmpCode, valueX, startY); // In toàn bộ mã ra ảnh
             ctx.fillText(joinDate, valueX, startY + lineSpacing);
             ctx.fillText(dob, valueX, startY + lineSpacing * 2);
             ctx.fillText(position, valueX, startY + lineSpacing * 3);
@@ -259,7 +285,9 @@
 
         function downloadImage() {
             const link = document.createElement('a');
-            link.download = 'Welcome_' + document.getElementById('fullName').value.replace(/ /g, '_') + '.jpg';
+            const empCode = "AVH" + document.getElementById('empCodeSuffix').value.toUpperCase();
+            // Cập nhật tên file tải về chứa cả mã nhân viên cho dễ quản lý
+            link.download = 'Welcome_' + empCode + '_' + document.getElementById('fullName').value.replace(/ /g, '_') + '.jpg';
             link.href = canvas.toDataURL('image/jpeg', 0.95);
             link.click();
         }
