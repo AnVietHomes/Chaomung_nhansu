@@ -57,7 +57,6 @@
             font-size: 14px;
         }
         
-        /* CSS cho box nhập mã nhân viên cố định AVH */
         .input-group {
             display: flex;
             align-items: stretch;
@@ -119,14 +118,14 @@
 
         <div class="form-group">
             <label>Phòng Ban:</label>
-            <input type="text" id="departmentText" value="PHÒNG KINH DOANH AV9" oninput="drawCanvas()">
+            <input type="text" id="departmentText" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()">
         </div>
 
         <div class="form-group">
             <label>Chi nhánh / Nơi làm việc:</label>
             <select id="branchSelect" onchange="drawCanvas()">
-                <option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option>
                 <option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option>
+                <option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option>
             </select>
         </div>
 
@@ -134,18 +133,18 @@
             <label>Mã nhân viên:</label>
             <div class="input-group">
                 <span class="input-group-addon">AVH</span>
-                <input type="text" id="empCodeSuffix" value="XXX" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
+                <input type="text" id="empCodeSuffix" value="404" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
             </div>
         </div>
 
         <div class="form-group">
             <label>Ngày vào công ty:</label>
-            <input type="text" id="joinDate" value="01/06/2026" oninput="drawCanvas()">
+            <input type="text" id="joinDate" value="12/06/2026" oninput="drawCanvas()">
         </div>
 
         <div class="form-group">
             <label>Ngày sinh:</label>
-            <input type="text" id="dob" value="25/02/2003" oninput="drawCanvas()">
+            <input type="text" id="dob" value="04/11/1988" oninput="drawCanvas()">
         </div>
 
         <div class="form-group">
@@ -155,7 +154,7 @@
 
         <div class="form-group">
             <label>Khối kinh doanh:</label>
-            <input type="text" id="businessBlock" value="A5" oninput="drawCanvas()">
+            <input type="text" id="businessBlock" value="A1" oninput="drawCanvas()">
         </div>
 
         <button onclick="downloadImage()">⬇ TẢI ẢNH VỀ MÁY</button>
@@ -244,7 +243,6 @@
             const departmentText = document.getElementById('departmentText').value.toUpperCase();
             const branchSelect = document.getElementById('branchSelect').value.toUpperCase();
             
-            // Lấy phần đuôi mã nhân viên và tự động gắn chữ AVH lên trước
             const empCodeSuffix = document.getElementById('empCodeSuffix').value.toUpperCase();
             const fullEmpCode = "AVH" + empCodeSuffix;
             
@@ -253,10 +251,26 @@
             const position = document.getElementById('position').value.toUpperCase();
             const businessBlock = document.getElementById('businessBlock').value.toUpperCase();
 
+            // ----------------------------------------------------
+            // THUẬT TOÁN TỰ ĐỘNG THU NHỎ FONT CHỮ CHO HỌ VÀ TÊN
+            // ----------------------------------------------------
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.font = 'bold 44px "Barlow"'; 
+            
+            let nameFontSize = 44; // Cỡ chữ mặc định ban đầu
+            const maxNameWidth = 470; // Giới hạn chiều rộng (510px khung - 40px lề)
+            
+            ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+            
+            // Vòng lặp: Nếu chữ đo được dài hơn giới hạn, giảm cỡ chữ đi 1px cho đến khi vừa
+            while (ctx.measureText(fullName).width > maxNameWidth && nameFontSize > 15) {
+                nameFontSize--;
+                ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+            }
+            
+            // In tên ra với cỡ chữ vừa được tính toán (giữ nguyên tọa độ y)
             ctx.fillText(fullName, 780, 505);
+            // ----------------------------------------------------
 
             ctx.font = '400 24px "Barlow"';
             ctx.fillText(departmentText, 780, 550);
@@ -276,7 +290,7 @@
             ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
 
             ctx.textAlign = 'right';
-            ctx.fillText(fullEmpCode, valueX, startY); // In toàn bộ mã ra ảnh
+            ctx.fillText(fullEmpCode, valueX, startY); 
             ctx.fillText(joinDate, valueX, startY + lineSpacing);
             ctx.fillText(dob, valueX, startY + lineSpacing * 2);
             ctx.fillText(position, valueX, startY + lineSpacing * 3);
@@ -286,7 +300,6 @@
         function downloadImage() {
             const link = document.createElement('a');
             const empCode = "AVH" + document.getElementById('empCodeSuffix').value.toUpperCase();
-            // Cập nhật tên file tải về chứa cả mã nhân viên cho dễ quản lý
             link.download = 'Welcome_' + empCode + '_' + document.getElementById('fullName').value.replace(/ /g, '_') + '.jpg';
             link.href = canvas.toDataURL('image/jpeg', 0.95);
             link.click();
