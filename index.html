@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-width=1.0">
-    <title>Tạo Ảnh Welcome On Board AVH</title>
+    <title>Công cụ nội bộ AVH - Tạo ảnh tự động</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* Khai báo Font SVN-Ivy Mode tải từ thư mục local */
+        @font-face {
+            font-family: 'SVN-Ivy Mode';
+            src: url('font/SVN-Ivy Mode.ttf') format('truetype');
+        }
+
         body {
             font-family: 'Barlow', Arial, sans-serif; 
             background-color: #f4f7f6;
@@ -17,6 +23,35 @@
             display: flex;
             gap: 20px;
         }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Barlow', Arial, sans-serif;
+            font-size: 14px;
+            color: #666;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            color: #0056b3;
+            border-bottom: 3px solid #0056b3;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
         .controls {
             width: 400px;
             background: white;
@@ -37,6 +72,7 @@
             height: auto;
             box-shadow: 0 2px 15px rgba(0,0,0,0.2);
             border-radius: 4px;
+            background-color: #ffffff; /* Thêm nền trắng dự phòng cho canvas */
         }
         .form-group {
             margin-bottom: 15px;
@@ -83,7 +119,7 @@
             outline: none;
         }
 
-        button {
+        .btn-download {
             width: 100%;
             padding: 12px;
             background-color: #0056b3;
@@ -96,7 +132,7 @@
             margin-top: 10px;
             font-family: 'Barlow', Arial, sans-serif;
         }
-        button:hover {
+        .btn-download:hover {
             background-color: #004494;
         }
     </style>
@@ -104,97 +140,130 @@
 <body>
 
     <div class="controls">
-        <h2>Nhập thông tin nhân sự</h2>
-        
-        <div class="form-group">
-            <label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label>
-            <input type="file" id="uploadImage" accept="image/*">
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('welcome')">Chào mừng</button>
+            <button class="tab-btn" onclick="switchTab('birthday')">Sinh nhật</button>
+            <button class="tab-btn" onclick="switchTab('idcard')">Thẻ NV</button>
         </div>
 
-        <div class="form-group">
-            <label>Họ và Tên:</label>
-            <input type="text" id="fullName" value="MR. NGUYỄN VĂN A" oninput="drawCanvas()">
-        </div>
-
-        <div class="form-group">
-            <label>Phòng Ban:</label>
-            <input type="text" id="departmentText" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()">
-        </div>
-
-        <div class="form-group">
-            <label>Chi nhánh / Nơi làm việc:</label>
-            <select id="branchSelect" onchange="drawCanvas()">
-                <option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option>
-                <option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>Mã nhân viên:</label>
-            <div class="input-group">
-                <span class="input-group-addon">AVH</span>
-                <input type="text" id="empCodeSuffix" value="404" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
+        <div id="welcome-form" class="tab-content active">
+            <div class="form-group">
+                <label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label>
+                <input type="file" id="uploadImageWelcome" accept="image/*">
             </div>
+            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. NGUYỄN VĂN A" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
+            <div class="form-group">
+                <label>Chi nhánh / Nơi làm việc:</label>
+                <select id="w_branch" onchange="drawCanvas()">
+                    <option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option>
+                    <option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mã nhân viên:</label>
+                <div class="input-group">
+                    <span class="input-group-addon">AVH</span>
+                    <input type="text" id="w_empCode" value="404" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
+                </div>
+            </div>
+            <div class="form-group"><label>Ngày vào công ty:</label><input type="text" id="w_joinDate" value="12/06/2026" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="04/11/1988" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="CHUYÊN VIÊN KINH DOANH" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Khối kinh doanh:</label><input type="text" id="w_businessBlock" value="A1" oninput="drawCanvas()"></div>
+            <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG</button>
         </div>
 
-        <div class="form-group">
-            <label>Ngày vào công ty:</label>
-            <input type="text" id="joinDate" value="12/06/2026" oninput="drawCanvas()">
+        <div id="birthday-form" class="tab-content">
+            <div class="form-group">
+                <label>Ảnh nhân sự:</label>
+                <input type="file" id="uploadImageBirthday" accept="image/*">
+            </div>
+            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
+            <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT (HD)</button>
         </div>
 
-        <div class="form-group">
-            <label>Ngày sinh:</label>
-            <input type="text" id="dob" value="04/11/1988" oninput="drawCanvas()">
+        <div id="idcard-form" class="tab-content">
+            <p style="color: #666; font-size: 14px; text-align: center;">Chức năng tạo Thẻ Nhân Viên đang được cập nhật...</p>
         </div>
 
-        <div class="form-group">
-            <label>Chức vụ:</label>
-            <input type="text" id="position" value="CHUYÊN VIÊN KINH DOANH" oninput="drawCanvas()">
-        </div>
-
-        <div class="form-group">
-            <label>Khối kinh doanh:</label>
-            <input type="text" id="businessBlock" value="A1" oninput="drawCanvas()">
-        </div>
-
-        <button onclick="downloadImage()">⬇ TẢI ẢNH VỀ MÁY</button>
     </div>
 
     <div class="preview-container">
-        <canvas id="myCanvas" width="1080" height="1080"></canvas>
+        <canvas id="myCanvas"></canvas>
     </div>
 
     <script>
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
         
-        const bgImg = new Image();
-        bgImg.src = 'bg.jpg'; 
+        let currentTab = 'welcome';
         
-        let userImg = null;
+        let userImgWelcome = null;
+        let userImgBirthday = null;
 
-        document.getElementById('uploadImage').addEventListener('change', function(e) {
+        const assets = {
+            welcomeBg: new Image(),
+            birthdayBg: new Image(),
+            ball1: new Image(),
+            ball2: new Image(),
+            titleSn: new Image()
+        };
+
+        assets.welcomeBg.src = 'image/bg.jpg';
+        // Đã đổi định dạng sang PNG theo phương pháp đục lỗ
+        assets.birthdayBg.src = 'image/bgsn.png'; 
+        assets.ball1.src = 'image/ball1.png';
+        assets.ball2.src = 'image/ball2.png';
+        assets.titleSn.src = 'image/titlesn.png';
+
+        document.getElementById('uploadImageWelcome').addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
-                userImg = new Image();
-                userImg.onload = function() {
-                    drawCanvas();
-                }
-                userImg.src = event.target.result;
+                userImgWelcome = new Image();
+                userImgWelcome.onload = function() { drawCanvas(); }
+                userImgWelcome.src = event.target.result;
             }
-            if(e.target.files[0]) {
-                reader.readAsDataURL(e.target.files[0]);
-            }
+            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        document.fonts.ready.then(function() {
-            bgImg.onload = function() {
-                drawCanvas();
-            };
-            if (bgImg.complete) {
-                drawCanvas();
+        document.getElementById('uploadImageBirthday').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                userImgBirthday = new Image();
+                userImgBirthday.onload = function() { drawCanvas(); }
+                userImgBirthday.src = event.target.result;
             }
+            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
+
+        document.fonts.ready.then(() => {
+            switchTab('welcome');
+        });
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(form => form.classList.remove('active'));
+            document.getElementById(`${tabName}-form`).classList.add('active');
+
+            if (tabName === 'welcome') {
+                canvas.width = 1080;
+                canvas.height = 1080;
+            } else if (tabName === 'birthday') {
+                canvas.width = 1080;
+                canvas.height = 1350; 
+            } else if (tabName === 'idcard') {
+                canvas.width = 600;
+                canvas.height = 960; 
+            }
+            
+            drawCanvas();
+        }
 
         function roundRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
@@ -211,27 +280,32 @@
         }
 
         function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (bgImg.complete && bgImg.naturalHeight !== 0) {
-                ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+            // Đổ nền trắng cho toàn bộ Canvas trước tiên để tránh lỗi nền đen khi lưu PNG trong suốt
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (currentTab === 'welcome') {
+                drawWelcomeLayout();
+            } else if (currentTab === 'birthday') {
+                drawBirthdayLayout();
+            }
+        }
+
+        // --- FORM WELCOME ---
+        function drawWelcomeLayout() {
+            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
+                ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             }
 
-            if (userImg) {
+            if (userImgWelcome) {
                 ctx.save();
-                const imgX = 68;
-                const imgY = 275;
-                const imgW = 415;
-                const imgH = 570;
-                
+                const imgX = 68, imgY = 275, imgW = 415, imgH = 570;
                 roundRect(ctx, imgX, imgY, imgW, imgH, 20); 
                 ctx.clip();
-                
-                const scale = Math.max(imgW / userImg.width, imgH / userImg.height);
-                const x = (imgW / 2) - (userImg.width / 2) * scale;
-                const y = (imgH / 2) - (userImg.height / 2) * scale;
-                
-                ctx.drawImage(userImg, imgX + x, imgY + y, userImg.width * scale, userImg.height * scale);
+                const scale = Math.max(imgW / userImgWelcome.width, imgH / userImgWelcome.height);
+                const x = (imgW / 2) - (userImgWelcome.width / 2) * scale;
+                const y = (imgH / 2) - (userImgWelcome.height / 2) * scale;
+                ctx.drawImage(userImgWelcome, imgX + x, imgY + y, userImgWelcome.width * scale, userImgWelcome.height * scale);
                 ctx.restore();
             }
 
@@ -239,48 +313,32 @@
             roundRect(ctx, 525, 440, 510, 165, 15);
             ctx.fill();
 
-            const fullName = document.getElementById('fullName').value.toUpperCase();
-            const departmentText = document.getElementById('departmentText').value.toUpperCase();
-            const branchSelect = document.getElementById('branchSelect').value.toUpperCase();
-            
-            const empCodeSuffix = document.getElementById('empCodeSuffix').value.toUpperCase();
-            const fullEmpCode = "AVH" + empCodeSuffix;
-            
-            const joinDate = document.getElementById('joinDate').value;
-            const dob = document.getElementById('dob').value;
-            const position = document.getElementById('position').value.toUpperCase();
-            const businessBlock = document.getElementById('businessBlock').value.toUpperCase();
+            const fullName = document.getElementById('w_fullName').value.toUpperCase();
+            const department = document.getElementById('w_department').value.toUpperCase();
+            const branch = document.getElementById('w_branch').value.toUpperCase();
+            const empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
+            const joinDate = document.getElementById('w_joinDate').value;
+            const dob = document.getElementById('w_dob').value;
+            const position = document.getElementById('w_position').value.toUpperCase();
+            const businessBlock = document.getElementById('w_businessBlock').value.toUpperCase();
 
-            // ----------------------------------------------------
-            // THUẬT TOÁN TỰ ĐỘNG THU NHỎ FONT CHỮ CHO HỌ VÀ TÊN
-            // ----------------------------------------------------
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             
-            let nameFontSize = 44; // Cỡ chữ mặc định ban đầu
-            const maxNameWidth = 470; // Giới hạn chiều rộng (510px khung - 40px lề)
-            
+            let nameFontSize = 44;
             ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            
-            // Vòng lặp: Nếu chữ đo được dài hơn giới hạn, giảm cỡ chữ đi 1px cho đến khi vừa
-            while (ctx.measureText(fullName).width > maxNameWidth && nameFontSize > 15) {
+            while (ctx.measureText(fullName).width > 470 && nameFontSize > 15) {
                 nameFontSize--;
                 ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
             }
-            
-            // In tên ra với cỡ chữ vừa được tính toán (giữ nguyên tọa độ y)
             ctx.fillText(fullName, 780, 505);
-            // ----------------------------------------------------
 
             ctx.font = '400 24px "Barlow"';
-            ctx.fillText(departmentText, 780, 550);
-            ctx.fillText(branchSelect, 780, 582);
+            ctx.fillText(department, 780, 550);
+            ctx.fillText(branch, 780, 582);
 
             ctx.font = '400 22px "Barlow"';
-            const labelX = 540;
-            const valueX = 1025; 
-            let startY = 650;
-            const lineSpacing = 42;
+            const labelX = 540, valueX = 1025, lineSpacing = 42; let startY = 650;
 
             ctx.textAlign = 'left';
             ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY);
@@ -290,18 +348,78 @@
             ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
 
             ctx.textAlign = 'right';
-            ctx.fillText(fullEmpCode, valueX, startY); 
+            ctx.fillText(empCode, valueX, startY); 
             ctx.fillText(joinDate, valueX, startY + lineSpacing);
             ctx.fillText(dob, valueX, startY + lineSpacing * 2);
             ctx.fillText(position, valueX, startY + lineSpacing * 3);
             ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
-        function downloadImage() {
+        // --- FORM BIRTHDAY ---
+        function drawBirthdayLayout() {
+            // LAYER 1: Vẽ ảnh nhân sự ĐẦU TIÊN (Nằm dưới cùng)
+            if (userImgBirthday) {
+                // Tọa độ này chỉ dùng để áng chừng khu vực phóng to ảnh lên, bạn có thể chỉnh lại để ảnh phủ kín "lỗ thủng"
+                const b_imgX = 265, b_imgY = 410, b_imgW = 550, b_imgH = 650;
+                
+                // Căn chỉnh ảnh phủ kín khu vực áng chừng
+                const scale = Math.max(b_imgW / userImgBirthday.width, b_imgH / userImgBirthday.height);
+                const x = (b_imgW / 2) - (userImgBirthday.width / 2) * scale;
+                const y = (b_imgH / 2) - (userImgBirthday.height / 2) * scale;
+                
+                // Vẽ trực tiếp ảnh, KHÔNG DÙNG CLIP BO GÓC NỮA
+                ctx.drawImage(userImgBirthday, b_imgX + x, b_imgY + y, userImgBirthday.width * scale, userImgBirthday.height * scale);
+            }
+
+            // LAYER 2: Vẽ nền sinh nhật CÓ LỖ THỦNG (bgsn.png) ĐÈ LÊN TRÊN ảnh nhân sự
+            if (assets.birthdayBg.complete && assets.birthdayBg.naturalHeight !== 0) {
+                ctx.drawImage(assets.birthdayBg, 0, 0, canvas.width, canvas.height);
+            }
+
+            // LAYER 3: Vẽ các chi tiết phụ đè lên nền
+            if (assets.ball1.complete && assets.ball1.naturalHeight !== 0) {
+                ctx.drawImage(assets.ball1, 0, 0, canvas.width, canvas.height);
+            }
+            if (assets.titleSn.complete && assets.titleSn.naturalHeight !== 0) {
+                ctx.drawImage(assets.titleSn, 0, 0, canvas.width, canvas.height);
+            }
+            if (assets.ball2.complete && assets.ball2.naturalHeight !== 0) {
+                ctx.drawImage(assets.ball2, 0, 0, canvas.width, canvas.height);
+            }
+
+            // LAYER 4: Text
+            const fullName = document.getElementById('b_fullName').value.toUpperCase();
+            const bDate = document.getElementById('b_date').value;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            ctx.font = 'normal 60px "SVN-Ivy Mode"';
+            ctx.fillText(fullName, canvas.width / 2, 1160);
+
+            ctx.font = 'normal 90px "SVN-Ivy Mode"';
+            ctx.fillText(bDate, canvas.width / 2, 1260);
+            
+            ctx.shadowColor = 'transparent';
+        }
+
+        function downloadImage(type) {
             const link = document.createElement('a');
-            const empCode = "AVH" + document.getElementById('empCodeSuffix').value.toUpperCase();
-            link.download = 'Welcome_' + empCode + '_' + document.getElementById('fullName').value.replace(/ /g, '_') + '.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            if (type === 'welcome') {
+                const empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
+                const name = document.getElementById('w_fullName').value.replace(/ /g, '_');
+                link.download = `Welcome_${empCode}_${name}.png`;
+            } else if (type === 'birthday') {
+                const name = document.getElementById('b_fullName').value.replace(/ /g, '_');
+                link.download = `HappyBirthday_${name}.png`;
+            }
+            
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
     </script>
