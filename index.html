@@ -9,10 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Khai báo Font SVN-Ivy Mode tải từ thư mục local */
+        /* Khai báo 2 Font SVN-Ivy Mode tải từ thư mục local */
         @font-face {
-            font-family: 'SVN-Ivy Mode';
-            src: url('font/SVN-Ivy Mode.ttf') format('truetype');
+            font-family: 'SVN-IvyMode-SemiBold';
+            src: url('font/SVN-IvyMode-SemiBold.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'SVN-IvyMode-Italic';
+            src: url('font/SVN-IvyMode-Italic.ttf') format('truetype');
         }
 
         body {
@@ -67,13 +71,19 @@
             justify-content: center;
             align-items: flex-start;
         }
+        
+        /* CSS thu nhỏ bản xem trước Canvas vừa vặn với màn hình */
         canvas {
             max-width: 100%;
+            max-height: 90vh; /* Giới hạn chiều cao hiển thị bằng 90% chiều cao màn hình */
+            width: auto;
             height: auto;
+            object-fit: contain; /* Ép tỷ lệ hiển thị không bị méo */
             box-shadow: 0 2px 15px rgba(0,0,0,0.2);
             border-radius: 4px;
-            background-color: #ffffff; /* Thêm nền trắng dự phòng cho canvas */
+            background-color: #ffffff; 
         }
+        
         .form-group {
             margin-bottom: 15px;
         }
@@ -147,26 +157,11 @@
         </div>
 
         <div id="welcome-form" class="tab-content active">
-            <div class="form-group">
-                <label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label>
-                <input type="file" id="uploadImageWelcome" accept="image/*">
-            </div>
+            <div class="form-group"><label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. NGUYỄN VĂN A" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
-            <div class="form-group">
-                <label>Chi nhánh / Nơi làm việc:</label>
-                <select id="w_branch" onchange="drawCanvas()">
-                    <option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option>
-                    <option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Mã nhân viên:</label>
-                <div class="input-group">
-                    <span class="input-group-addon">AVH</span>
-                    <input type="text" id="w_empCode" value="404" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5">
-                </div>
-            </div>
+            <div class="form-group"><label>Chi nhánh / Nơi làm việc:</label><select id="w_branch" onchange="drawCanvas()"><option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option><option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option></select></div>
+            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="404" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
             <div class="form-group"><label>Ngày vào công ty:</label><input type="text" id="w_joinDate" value="12/06/2026" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="04/11/1988" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="CHUYÊN VIÊN KINH DOANH" oninput="drawCanvas()"></div>
@@ -175,10 +170,7 @@
         </div>
 
         <div id="birthday-form" class="tab-content">
-            <div class="form-group">
-                <label>Ảnh nhân sự:</label>
-                <input type="file" id="uploadImageBirthday" accept="image/*">
-            </div>
+            <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
             <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT (HD)</button>
@@ -187,7 +179,6 @@
         <div id="idcard-form" class="tab-content">
             <p style="color: #666; font-size: 14px; text-align: center;">Chức năng tạo Thẻ Nhân Viên đang được cập nhật...</p>
         </div>
-
     </div>
 
     <div class="preview-container">
@@ -199,7 +190,6 @@
         const ctx = canvas.getContext('2d');
         
         let currentTab = 'welcome';
-        
         let userImgWelcome = null;
         let userImgBirthday = null;
 
@@ -212,7 +202,6 @@
         };
 
         assets.welcomeBg.src = 'image/bg.jpg';
-        // Đã đổi định dạng sang PNG theo phương pháp đục lỗ
         assets.birthdayBg.src = 'image/bgsn.png'; 
         assets.ball1.src = 'image/ball1.png';
         assets.ball2.src = 'image/ball2.png';
@@ -238,49 +227,30 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        document.fonts.ready.then(() => {
-            switchTab('welcome');
-        });
+        document.fonts.ready.then(() => { switchTab('welcome'); });
 
         function switchTab(tabName) {
             currentTab = tabName;
-            
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
-            
             document.querySelectorAll('.tab-content').forEach(form => form.classList.remove('active'));
             document.getElementById(`${tabName}-form`).classList.add('active');
 
             if (tabName === 'welcome') {
-                canvas.width = 1080;
-                canvas.height = 1080;
+                canvas.width = 1080; canvas.height = 1080;
             } else if (tabName === 'birthday') {
-                canvas.width = 1080;
-                canvas.height = 1350; 
+                canvas.width = 1080; canvas.height = 1350; 
             } else if (tabName === 'idcard') {
-                canvas.width = 600;
-                canvas.height = 960; 
+                canvas.width = 600; canvas.height = 960; 
             }
-            
             drawCanvas();
         }
 
         function roundRect(ctx, x, y, width, height, radius) {
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + width - radius, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-            ctx.lineTo(x + width, y + height - radius);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-            ctx.lineTo(x + radius, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
+            ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
         }
 
         function drawCanvas() {
-            // Đổ nền trắng cho toàn bộ Canvas trước tiên để tránh lỗi nền đen khi lưu PNG trong suốt
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -293,15 +263,11 @@
 
         // --- FORM WELCOME ---
         function drawWelcomeLayout() {
-            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
-                ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
-            }
-
+            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             if (userImgWelcome) {
                 ctx.save();
                 const imgX = 68, imgY = 275, imgW = 415, imgH = 570;
-                roundRect(ctx, imgX, imgY, imgW, imgH, 20); 
-                ctx.clip();
+                roundRect(ctx, imgX, imgY, imgW, imgH, 20); ctx.clip();
                 const scale = Math.max(imgW / userImgWelcome.width, imgH / userImgWelcome.height);
                 const x = (imgW / 2) - (userImgWelcome.width / 2) * scale;
                 const y = (imgH / 2) - (userImgWelcome.height / 2) * scale;
@@ -309,9 +275,7 @@
                 ctx.restore();
             }
 
-            ctx.fillStyle = '#21c1e0'; 
-            roundRect(ctx, 525, 440, 510, 165, 15);
-            ctx.fill();
+            ctx.fillStyle = '#21c1e0'; roundRect(ctx, 525, 440, 510, 165, 15); ctx.fill();
 
             const fullName = document.getElementById('w_fullName').value.toUpperCase();
             const department = document.getElementById('w_department').value.toUpperCase();
@@ -322,61 +286,35 @@
             const position = document.getElementById('w_position').value.toUpperCase();
             const businessBlock = document.getElementById('w_businessBlock').value.toUpperCase();
 
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            
-            let nameFontSize = 44;
-            ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            while (ctx.measureText(fullName).width > 470 && nameFontSize > 15) {
-                nameFontSize--;
-                ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            }
+            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
+            let nameFontSize = 44; ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+            while (ctx.measureText(fullName).width > 470 && nameFontSize > 15) { nameFontSize--; ctx.font = 'bold ' + nameFontSize + 'px "Barlow"'; }
             ctx.fillText(fullName, 780, 505);
 
-            ctx.font = '400 24px "Barlow"';
-            ctx.fillText(department, 780, 550);
-            ctx.fillText(branch, 780, 582);
-
+            ctx.font = '400 24px "Barlow"'; ctx.fillText(department, 780, 550); ctx.fillText(branch, 780, 582);
             ctx.font = '400 22px "Barlow"';
             const labelX = 540, valueX = 1025, lineSpacing = 42; let startY = 650;
-
-            ctx.textAlign = 'left';
-            ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY);
-            ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing);
-            ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2);
-            ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3);
-            ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
-
-            ctx.textAlign = 'right';
-            ctx.fillText(empCode, valueX, startY); 
-            ctx.fillText(joinDate, valueX, startY + lineSpacing);
-            ctx.fillText(dob, valueX, startY + lineSpacing * 2);
-            ctx.fillText(position, valueX, startY + lineSpacing * 3);
-            ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
+            ctx.textAlign = 'left'; ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing); ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2); ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3); ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
+            ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
         // --- FORM BIRTHDAY ---
         function drawBirthdayLayout() {
-            // LAYER 1: Vẽ ảnh nhân sự ĐẦU TIÊN (Nằm dưới cùng)
+            // LAYER 1: Ảnh nhân sự 
             if (userImgBirthday) {
-                // Tọa độ này chỉ dùng để áng chừng khu vực phóng to ảnh lên, bạn có thể chỉnh lại để ảnh phủ kín "lỗ thủng"
                 const b_imgX = 265, b_imgY = 410, b_imgW = 550, b_imgH = 650;
-                
-                // Căn chỉnh ảnh phủ kín khu vực áng chừng
                 const scale = Math.max(b_imgW / userImgBirthday.width, b_imgH / userImgBirthday.height);
                 const x = (b_imgW / 2) - (userImgBirthday.width / 2) * scale;
                 const y = (b_imgH / 2) - (userImgBirthday.height / 2) * scale;
-                
-                // Vẽ trực tiếp ảnh, KHÔNG DÙNG CLIP BO GÓC NỮA
                 ctx.drawImage(userImgBirthday, b_imgX + x, b_imgY + y, userImgBirthday.width * scale, userImgBirthday.height * scale);
             }
 
-            // LAYER 2: Vẽ nền sinh nhật CÓ LỖ THỦNG (bgsn.png) ĐÈ LÊN TRÊN ảnh nhân sự
+            // LAYER 2: Nền sinh nhật đục lỗ
             if (assets.birthdayBg.complete && assets.birthdayBg.naturalHeight !== 0) {
                 ctx.drawImage(assets.birthdayBg, 0, 0, canvas.width, canvas.height);
             }
 
-            // LAYER 3: Vẽ các chi tiết phụ đè lên nền
+            // LAYER 3: Các lớp overlay trang trí full canvas (Cách 1)
             if (assets.ball1.complete && assets.ball1.naturalHeight !== 0) {
                 ctx.drawImage(assets.ball1, 0, 0, canvas.width, canvas.height);
             }
@@ -387,7 +325,7 @@
                 ctx.drawImage(assets.ball2, 0, 0, canvas.width, canvas.height);
             }
 
-            // LAYER 4: Text
+            // LAYER 4: Text với 2 loại Font khác nhau
             const fullName = document.getElementById('b_fullName').value.toUpperCase();
             const bDate = document.getElementById('b_date').value;
 
@@ -399,10 +337,12 @@
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
 
-            ctx.font = 'normal 60px "SVN-Ivy Mode"';
+            // Dùng font SemiBold cho Tên
+            ctx.font = 'normal 60px "SVN-IvyMode-SemiBold"';
             ctx.fillText(fullName, canvas.width / 2, 1160);
 
-            ctx.font = 'normal 90px "SVN-Ivy Mode"';
+            // Dùng font Italic cho Ngày
+            ctx.font = 'normal 90px "SVN-IvyMode-Italic"';
             ctx.fillText(bDate, canvas.width / 2, 1260);
             
             ctx.shadowColor = 'transparent';
@@ -418,7 +358,6 @@
                 const name = document.getElementById('b_fullName').value.replace(/ /g, '_');
                 link.download = `HappyBirthday_${name}.png`;
             }
-            
             link.href = canvas.toDataURL('image/png');
             link.click();
         }
