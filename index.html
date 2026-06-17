@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         @font-face {
             font-family: 'SVN-IvyMode-SemiBold';
@@ -56,7 +58,7 @@
         }
 
         .controls {
-            width: 400px;
+            width: 450px;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -69,21 +71,26 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow: hidden;
         }
         
         canvas {
             max-width: 100%;
-            max-height: 90vh; 
+            max-height: 100%; 
             width: auto;
             height: auto;
             object-fit: contain; 
-            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-            border-radius: 4px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            border-radius: 2px;
             background-color: #ffffff; 
         }
         
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #333; }
         input[type="text"], input[type="file"], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Barlow', Arial, sans-serif; font-size: 14px; }
         
         .input-group { display: flex; align-items: stretch; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
@@ -91,8 +98,11 @@
         .input-group input { border: none; border-radius: 0; margin: 0; flex-grow: 1; }
         .input-group input:focus { outline: none; }
 
-        .btn-download { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: 'Barlow', Arial, sans-serif; }
+        .btn-download { width: 100%; padding: 15px; background-color: #0056b3; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-family: 'Barlow', Arial, sans-serif; text-transform: uppercase; }
         .btn-download:hover { background-color: #004494; }
+        
+        .card-block { border: 2px dashed #d1d8dd; padding: 15px; margin-bottom: 20px; border-radius: 8px; background: #fdfdfd; }
+        .card-block h4 { margin-top: 0; color: #0056b3; border-bottom: 1px solid #eee; padding-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -105,6 +115,7 @@
         </div>
 
         <div id="welcome-form" class="tab-content active">
+            <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG (+THẺ NV)</button>
             <div class="form-group"><label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. NGUYỄN TRUNG KIÊN" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
@@ -114,22 +125,20 @@
             <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="04/11/1988" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="Chuyên viên Kinh doanh" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Khối kinh doanh:</label><input type="text" id="w_businessBlock" value="A1" oninput="drawCanvas()"></div>
-            <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG (+THẺ NV)</button>
         </div>
 
         <div id="birthday-form" class="tab-content">
+            <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
-            <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
         </div>
 
         <div id="idcard-form" class="tab-content">
-            <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageIdCard" accept="image/*"></div>
-            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="i_fullName" value="NGUYỄN TRUNG KIÊN" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="i_empCode" value="012" oninput="drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
-            <div class="form-group"><label>Chức danh:</label><input type="text" id="i_position" value="Chuyên viên Kinh doanh" oninput="drawCanvas()"></div>
-            <button class="btn-download" onclick="downloadImage('idcard')">⬇ TẢI THẺ NHÂN VIÊN</button>
+            <button class="btn-download" onclick="downloadImage('idcard')" style="background-color: #28a745;">⬇ TẢI FILE IN PDF (KHỔ A4)</button>
+            <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Trang giấy sẽ tự động chừa trống nếu bạn không nhập thông tin ở các thẻ bên dưới.</p>
+            
+            <div id="idcard-list-container"></div>
         </div>
     </div>
 
@@ -144,7 +153,9 @@
         let currentTab = 'welcome';
         let userImgWelcome = null;
         let userImgBirthday = null;
-        let userImgIdCard = null;
+        
+        // Mảng lưu 8 ảnh của 8 thẻ nhân viên
+        let idCardImages = new Array(9).fill(null);
 
         const assets = {
             welcomeBg: new Image(),
@@ -162,6 +173,36 @@
         assets.ball2.src = 'image/ball2.png';
         assets.titleSn.src = 'image/titlesn.png';
 
+        // ----------------------------------------------------
+        // TỰ ĐỘNG TẠO 8 KHỐI NHẬP LIỆU CHO THẺ NHÂN VIÊN
+        // ----------------------------------------------------
+        const idCardContainer = document.getElementById('idcard-list-container');
+        for (let i = 1; i <= 8; i++) {
+            let label = i === 1 ? `<span style="color: #ff6b6b; font-size:12px;">(Tự động đồng bộ từ tab Chào mừng)</span>` : "";
+            idCardContainer.innerHTML += `
+                <div class="card-block">
+                    <h4>Thẻ số ${i} ${label}</h4>
+                    <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" accept="image/*" onchange="loadIdCardImage(event, ${i})"></div>
+                    <div class="form-group"><label>Họ và Tên:</label><input type="text" id="i_fullName_${i}" oninput="drawCanvas()"></div>
+                    <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="i_empCode_${i}" oninput="drawCanvas()" maxlength="5"></div></div>
+                    <div class="form-group"><label>Chức danh:</label><input type="text" id="i_pos_${i}" oninput="drawCanvas()"></div>
+                </div>
+            `;
+        }
+
+        // Hàm xử lý ảnh riêng cho các Thẻ NV
+        function loadIdCardImage(event, index) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let img = new Image();
+                img.onload = function() { drawCanvas(); }
+                img.src = e.target.result;
+                idCardImages[index] = img;
+            }
+            if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // Upload ảnh Welcome (Đồng thời sync cho thẻ 1)
         document.getElementById('uploadImageWelcome').addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -169,8 +210,10 @@
                 userImgWelcome.onload = function() { drawCanvas(); }
                 userImgWelcome.src = event.target.result;
 
-                userImgIdCard = new Image();
-                userImgIdCard.src = event.target.result;
+                let imgForCard = new Image();
+                imgForCard.onload = function() { drawCanvas(); }
+                imgForCard.src = event.target.result;
+                idCardImages[1] = imgForCard; // Sync vào Thẻ số 1
             }
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
@@ -185,26 +228,23 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        document.getElementById('uploadImageIdCard').addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                userImgIdCard = new Image();
-                userImgIdCard.onload = function() { drawCanvas(); }
-                userImgIdCard.src = event.target.result;
-            }
-            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
-        });
-
-        document.fonts.ready.then(() => { switchTab('welcome'); });
-
+        // ----------------------------------------------------
+        // ĐỒNG BỘ TEXT WELCOME SANG THẺ SỐ 1
+        // ----------------------------------------------------
         function syncToIdCard() {
             let fullNameWelcome = document.getElementById('w_fullName').value;
             let cleanedName = fullNameWelcome.replace(/^(mr\.|ms\.|mrs\.|mr|ms|mrs)\s+/i, '').trim();
             
-            document.getElementById('i_fullName').value = cleanedName;
-            document.getElementById('i_empCode').value = document.getElementById('w_empCode').value;
-            document.getElementById('i_position').value = document.getElementById('w_position').value;
+            document.getElementById('i_fullName_1').value = cleanedName;
+            document.getElementById('i_empCode_1').value = document.getElementById('w_empCode').value;
+            document.getElementById('i_pos_1').value = document.getElementById('w_position').value;
         }
+
+        // Đảm bảo load xong Font thì mới render Canvas
+        document.fonts.ready.then(() => { 
+            syncToIdCard(); // Khởi tạo dữ liệu mẫu ban đầu
+            switchTab('welcome'); 
+        });
 
         function switchTab(tabName) {
             currentTab = tabName;
@@ -218,7 +258,7 @@
             } else if (tabName === 'birthday') {
                 canvas.width = 1080; canvas.height = 1350; 
             } else if (tabName === 'idcard') {
-                canvas.width = 600; canvas.height = 960; 
+                canvas.width = 3508; canvas.height = 2480; // Kích thước pixel tương đương giấy A4 ngang ở 300 DPI
             }
             drawCanvas();
         }
@@ -236,10 +276,11 @@
             } else if (currentTab === 'birthday') {
                 drawBirthdayLayout();
             } else if (currentTab === 'idcard') {
-                drawIdCardLayout();
+                drawA4IdCardsLayout();
             }
         }
 
+        // --- RENDER CHÀO MỪNG ---
         function drawWelcomeLayout() {
             if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             if (userImgWelcome) {
@@ -276,6 +317,7 @@
             ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
+        // --- RENDER SINH NHẬT ---
         function drawBirthdayLayout() {
             if (userImgBirthday) {
                 const b_imgX = 265, b_imgY = 410, b_imgW = 550, b_imgH = 650;
@@ -296,9 +338,8 @@
             ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
 
-            // --- CẬP NHẬT: Tự động thu nhỏ cỡ chữ Tên Sinh Nhật ---
             let bNameFontSize = 60; 
-            const maxBNameWidth = 880; // Trừ hao 100px lề mỗi bên (canvas rộng 1080px)
+            const maxBNameWidth = 880; 
             ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
             
             while (ctx.measureText(fullName).width > maxBNameWidth && bNameFontSize > 25) {
@@ -307,33 +348,82 @@
             }
             ctx.fillText(fullName, canvas.width / 2, 1160);
 
-            // Ngày sinh nhật (Mặc định không quá dài nên giữ nguyên kích thước)
             ctx.font = 'normal 90px "SVN-IvyMode-Italic"'; 
             ctx.fillText(bDate, canvas.width / 2, 1260);
             
             ctx.shadowColor = 'transparent';
         }
 
-        function drawIdCardLayout() {
-            if (userImgIdCard) {
-                const i_imgX = 140, i_imgY = 280, i_imgW = 320, i_imgH = 420;
-                const scale = Math.max(i_imgW / userImgIdCard.width, i_imgH / userImgIdCard.height);
-                const x = (i_imgW / 2) - (userImgIdCard.width / 2) * scale;
-                const y = (i_imgH / 2) - (userImgIdCard.height / 2) * scale;
-                ctx.drawImage(userImgIdCard, i_imgX + x, i_imgY + y, userImgIdCard.width * scale, userImgIdCard.height * scale);
-            }
-
-            if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
-                ctx.drawImage(assets.idCardBg, 0, 0, canvas.width, canvas.height);
-            }
-
-            const fullName = document.getElementById('i_fullName').value.toUpperCase();
-            const empCode = "AVH" + document.getElementById('i_empCode').value.toUpperCase();
-            const position = document.getElementById('i_position').value;
-
-            ctx.fillStyle = '#012b3f'; 
+        // ----------------------------------------------------
+        // RENDER 8 THẺ NHÂN VIÊN LÊN TRANG A4
+        // ----------------------------------------------------
+        function drawA4IdCardsLayout() {
+            // Tính toán kích thước chuẩn in ấn (300 DPI) cho từng thẻ
+            // Kích thước thật thẻ: 5.4cm x 8.5cm -> Quy ra Pixel: 638px x 1004px
+            const cardW = 638; 
+            const cardH = 1004; 
+            const gapX = 59; // Khoảng cách giữa các thẻ ~ 5mm
+            const gapY = 59;
             
+            // Canh lề giữa trang A4
+            const startX = 390; 
+            const startY = 206; 
+
+            for(let i = 1; i <= 8; i++) {
+                // Chỉ render những thẻ có tối thiểu thông tin (Tên hoặc Hình ảnh)
+                let name = document.getElementById('i_fullName_'+i).value.toUpperCase();
+                let img = idCardImages[i];
+                if(name === "" && !img) continue; // Bỏ qua nếu ô để trống
+
+                let col = (i - 1) % 4; // 4 cột
+                let row = Math.floor((i - 1) / 4); // 2 hàng
+                let x = startX + col * (cardW + gapX);
+                let y = startY + row * (cardH + gapY);
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // Vẽ 1 khung viền xám mờ làm đường cắt kéo (Cut line)
+                ctx.strokeStyle = '#cccccc';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(0, 0, cardW, cardH);
+
+                // Thuật toán bóp tỷ lệ thiết kế (600x960) gốc vừa vặn vào kích thước 300DPI (638x1004)
+                ctx.scale(cardW / 600, cardH / 960);
+
+                // Vẽ nội dung của 1 thẻ
+                drawSingleIdCard(i);
+
+                ctx.restore();
+            }
+        }
+
+        // --- VẼ CHI TIẾT 1 THẺ NV (Hàm con) ---
+        function drawSingleIdCard(index) {
+            let img = idCardImages[index];
+            let fullName = document.getElementById('i_fullName_'+index).value.toUpperCase();
+            let rawCode = document.getElementById('i_empCode_'+index).value.toUpperCase();
+            let empCode = rawCode ? "AVH" + rawCode : "";
+            let position = document.getElementById('i_pos_'+index).value;
+
+            // 1. Ảnh chân dung (Nằm dưới)
+            if (img) {
+                const i_imgX = 140, i_imgY = 280, i_imgW = 320, i_imgH = 420;
+                const scale = Math.max(i_imgW / img.width, i_imgH / img.height);
+                const x = (i_imgW / 2) - (img.width / 2) * scale;
+                const y = (i_imgH / 2) - (img.height / 2) * scale;
+                ctx.drawImage(img, i_imgX + x, i_imgY + y, img.width * scale, img.height * scale);
+            }
+
+            // 2. Overlay Nền thiết kế đục lỗ
+            if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
+                ctx.drawImage(assets.idCardBg, 0, 0, 600, 960);
+            }
+
+            // 3. Text
+            ctx.fillStyle = '#012b3f'; 
             ctx.textAlign = 'center';
+            
             let nameFontSize = 38; 
             const maxIdNameWidth = 480; 
             ctx.font = '800 ' + nameFontSize + 'px "Manrope"'; 
@@ -342,49 +432,42 @@
                 nameFontSize--;
                 ctx.font = '800 ' + nameFontSize + 'px "Manrope"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 740);
+            ctx.fillText(fullName, 300, 740);
 
             let row1_Y = 790;
             ctx.font = '500 20px "Manrope"';
             ctx.textAlign = 'left';
-            ctx.fillText('Mã nhân viên:', 120, row1_Y);
+            if(empCode) ctx.fillText('Mã nhân viên:', 120, row1_Y);
             ctx.font = '600 20px "Manrope"';
             ctx.textAlign = 'right';
-            ctx.fillText(empCode, 480, row1_Y);
+            if(empCode) ctx.fillText(empCode, 480, row1_Y);
 
             let row2_Y = 825;
             ctx.font = '500 20px "Manrope"';
             ctx.textAlign = 'left';
-            ctx.fillText('Chức danh:', 120, row2_Y);
+            if(position) ctx.fillText('Chức danh:', 120, row2_Y);
             ctx.font = '600 20px "Manrope"';
             ctx.textAlign = 'right';
-            ctx.fillText(position, 480, row2_Y);
+            if(position) ctx.fillText(position, 480, row2_Y);
         }
 
+        // ----------------------------------------------------
+        // TÍNH NĂNG TẢI FILE / XUẤT PDF
+        // ----------------------------------------------------
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
                 const w_name = document.getElementById('w_fullName').value.replace(/ /g, '_');
                 
+                // 1. Tải ảnh chào mừng
                 let linkW = document.createElement('a');
                 linkW.download = `Welcome_${w_empCode}_${w_name}.png`;
                 linkW.href = canvas.toDataURL('image/png');
                 linkW.click();
 
+                // 2. Chờ 0.5s để browser xử lý xong rồi tải tiếp Thẻ NV (Dàn file PDF)
                 setTimeout(() => {
-                    canvas.width = 600; canvas.height = 960;
-                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    drawIdCardLayout(); 
-                    
-                    let linkI = document.createElement('a');
-                    const cleanedName = document.getElementById('i_fullName').value.replace(/ /g, '_');
-                    linkI.download = `TheNV_${w_empCode}_${cleanedName}.png`;
-                    linkI.href = canvas.toDataURL('image/png');
-                    linkI.click();
-
-                    canvas.width = 1080; canvas.height = 1080;
-                    drawCanvas();
+                    generateIdCardPDF();
                 }, 500);
 
             } else if (type === 'birthday') {
@@ -395,13 +478,25 @@
                 link.click();
                 
             } else if (type === 'idcard') {
-                const empCode = "AVH" + document.getElementById('i_empCode').value.toUpperCase();
-                const name = document.getElementById('i_fullName').value.replace(/ /g, '_');
-                let link = document.createElement('a');
-                link.download = `TheNV_${empCode}_${name}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+                generateIdCardPDF();
             }
+        }
+
+        function generateIdCardPDF() {
+            // Chuyển Canvas sang chế độ A4
+            canvas.width = 3508; canvas.height = 2480;
+            drawCanvas(); 
+            
+            // Sử dụng thư viện jsPDF để nén Canvas vào một file chuẩn A4 kích thước mm
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            
+            // Chèn bản đồ ảnh từ Canvas vào PDF (Định dạng JPEG giúp giảm dung lượng file in)
+            doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 297, 210);
+            doc.save('AVH_Trang_In_The_Nhan_Vien.pdf');
+
+            // Sau khi xuất file, trả Canvas về trạng thái khung nhìn hiện tại
+            setTimeout(() => { switchTab(currentTab); }, 100);
         }
     </script>
 </body>
