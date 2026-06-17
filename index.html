@@ -57,17 +57,23 @@
             display: block;
         }
 
+        /* ĐÃ SỬA LỖI BÓP KHUNG Ở ĐÂY */
         .controls {
             width: 450px;
+            min-width: 450px; /* Bắt buộc chiều rộng tối thiểu */
+            flex-shrink: 0; /* Ngăn trình duyệt tự động ép nhỏ khung này */
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             max-height: 90vh;
             overflow-y: auto;
+            box-sizing: border-box;
         }
+        
         .preview-container {
             flex-grow: 1;
+            min-width: 0; /* Trick của CSS Flexbox để ngăn canvas tràn ra đẩy khung bên trái */
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -76,6 +82,7 @@
             border-radius: 8px;
             max-height: 90vh;
             overflow: hidden;
+            box-sizing: border-box;
         }
         
         canvas {
@@ -154,7 +161,6 @@
         let userImgWelcome = null;
         let userImgBirthday = null;
         
-        // Mảng lưu 8 ảnh của 8 thẻ nhân viên
         let idCardImages = new Array(9).fill(null);
 
         const assets = {
@@ -173,9 +179,6 @@
         assets.ball2.src = 'image/ball2.png';
         assets.titleSn.src = 'image/titlesn.png';
 
-        // ----------------------------------------------------
-        // TỰ ĐỘNG TẠO 8 KHỐI NHẬP LIỆU CHO THẺ NHÂN VIÊN
-        // ----------------------------------------------------
         const idCardContainer = document.getElementById('idcard-list-container');
         for (let i = 1; i <= 8; i++) {
             let label = i === 1 ? `<span style="color: #ff6b6b; font-size:12px;">(Tự động đồng bộ từ tab Chào mừng)</span>` : "";
@@ -190,7 +193,6 @@
             `;
         }
 
-        // Hàm xử lý ảnh riêng cho các Thẻ NV
         function loadIdCardImage(event, index) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -202,7 +204,6 @@
             if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
         }
 
-        // Upload ảnh Welcome (Đồng thời sync cho thẻ 1)
         document.getElementById('uploadImageWelcome').addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -213,7 +214,7 @@
                 let imgForCard = new Image();
                 imgForCard.onload = function() { drawCanvas(); }
                 imgForCard.src = event.target.result;
-                idCardImages[1] = imgForCard; // Sync vào Thẻ số 1
+                idCardImages[1] = imgForCard; 
             }
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
@@ -228,9 +229,6 @@
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
         });
 
-        // ----------------------------------------------------
-        // ĐỒNG BỘ TEXT WELCOME SANG THẺ SỐ 1
-        // ----------------------------------------------------
         function syncToIdCard() {
             let fullNameWelcome = document.getElementById('w_fullName').value;
             let cleanedName = fullNameWelcome.replace(/^(mr\.|ms\.|mrs\.|mr|ms|mrs)\s+/i, '').trim();
@@ -240,9 +238,8 @@
             document.getElementById('i_pos_1').value = document.getElementById('w_position').value;
         }
 
-        // Đảm bảo load xong Font thì mới render Canvas
         document.fonts.ready.then(() => { 
-            syncToIdCard(); // Khởi tạo dữ liệu mẫu ban đầu
+            syncToIdCard(); 
             switchTab('welcome'); 
         });
 
@@ -258,7 +255,7 @@
             } else if (tabName === 'birthday') {
                 canvas.width = 1080; canvas.height = 1350; 
             } else if (tabName === 'idcard') {
-                canvas.width = 3508; canvas.height = 2480; // Kích thước pixel tương đương giấy A4 ngang ở 300 DPI
+                canvas.width = 3508; canvas.height = 2480; 
             }
             drawCanvas();
         }
@@ -280,7 +277,6 @@
             }
         }
 
-        // --- RENDER CHÀO MỪNG ---
         function drawWelcomeLayout() {
             if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             if (userImgWelcome) {
@@ -317,7 +313,6 @@
             ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
-        // --- RENDER SINH NHẬT ---
         function drawBirthdayLayout() {
             if (userImgBirthday) {
                 const b_imgX = 265, b_imgY = 410, b_imgW = 550, b_imgH = 650;
@@ -354,51 +349,37 @@
             ctx.shadowColor = 'transparent';
         }
 
-        // ----------------------------------------------------
-        // RENDER 8 THẺ NHÂN VIÊN LÊN TRANG A4
-        // ----------------------------------------------------
         function drawA4IdCardsLayout() {
-            // Tính toán kích thước chuẩn in ấn (300 DPI) cho từng thẻ
-            // Kích thước thật thẻ: 5.4cm x 8.5cm -> Quy ra Pixel: 638px x 1004px
             const cardW = 638; 
             const cardH = 1004; 
-            const gapX = 59; // Khoảng cách giữa các thẻ ~ 5mm
+            const gapX = 59; 
             const gapY = 59;
-            
-            // Canh lề giữa trang A4
             const startX = 390; 
             const startY = 206; 
 
             for(let i = 1; i <= 8; i++) {
-                // Chỉ render những thẻ có tối thiểu thông tin (Tên hoặc Hình ảnh)
                 let name = document.getElementById('i_fullName_'+i).value.toUpperCase();
                 let img = idCardImages[i];
-                if(name === "" && !img) continue; // Bỏ qua nếu ô để trống
+                if(name === "" && !img) continue; 
 
-                let col = (i - 1) % 4; // 4 cột
-                let row = Math.floor((i - 1) / 4); // 2 hàng
+                let col = (i - 1) % 4; 
+                let row = Math.floor((i - 1) / 4); 
                 let x = startX + col * (cardW + gapX);
                 let y = startY + row * (cardH + gapY);
 
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Vẽ 1 khung viền xám mờ làm đường cắt kéo (Cut line)
                 ctx.strokeStyle = '#cccccc';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(0, 0, cardW, cardH);
 
-                // Thuật toán bóp tỷ lệ thiết kế (600x960) gốc vừa vặn vào kích thước 300DPI (638x1004)
                 ctx.scale(cardW / 600, cardH / 960);
-
-                // Vẽ nội dung của 1 thẻ
                 drawSingleIdCard(i);
-
                 ctx.restore();
             }
         }
 
-        // --- VẼ CHI TIẾT 1 THẺ NV (Hàm con) ---
         function drawSingleIdCard(index) {
             let img = idCardImages[index];
             let fullName = document.getElementById('i_fullName_'+index).value.toUpperCase();
@@ -406,7 +387,6 @@
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
 
-            // 1. Ảnh chân dung (Nằm dưới)
             if (img) {
                 const i_imgX = 140, i_imgY = 280, i_imgW = 320, i_imgH = 420;
                 const scale = Math.max(i_imgW / img.width, i_imgH / img.height);
@@ -415,12 +395,10 @@
                 ctx.drawImage(img, i_imgX + x, i_imgY + y, img.width * scale, img.height * scale);
             }
 
-            // 2. Overlay Nền thiết kế đục lỗ
             if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
                 ctx.drawImage(assets.idCardBg, 0, 0, 600, 960);
             }
 
-            // 3. Text
             ctx.fillStyle = '#012b3f'; 
             ctx.textAlign = 'center';
             
@@ -451,21 +429,16 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
-        // ----------------------------------------------------
-        // TÍNH NĂNG TẢI FILE / XUẤT PDF
-        // ----------------------------------------------------
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
                 const w_name = document.getElementById('w_fullName').value.replace(/ /g, '_');
                 
-                // 1. Tải ảnh chào mừng
                 let linkW = document.createElement('a');
                 linkW.download = `Welcome_${w_empCode}_${w_name}.png`;
                 linkW.href = canvas.toDataURL('image/png');
                 linkW.click();
 
-                // 2. Chờ 0.5s để browser xử lý xong rồi tải tiếp Thẻ NV (Dàn file PDF)
                 setTimeout(() => {
                     generateIdCardPDF();
                 }, 500);
@@ -483,19 +456,15 @@
         }
 
         function generateIdCardPDF() {
-            // Chuyển Canvas sang chế độ A4
             canvas.width = 3508; canvas.height = 2480;
             drawCanvas(); 
             
-            // Sử dụng thư viện jsPDF để nén Canvas vào một file chuẩn A4 kích thước mm
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             
-            // Chèn bản đồ ảnh từ Canvas vào PDF (Định dạng JPEG giúp giảm dung lượng file in)
             doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 297, 210);
             doc.save('AVH_Trang_In_The_Nhan_Vien.pdf');
 
-            // Sau khi xuất file, trả Canvas về trạng thái khung nhìn hiện tại
             setTimeout(() => { switchTab(currentTab); }, 100);
         }
     </script>
