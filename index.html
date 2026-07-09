@@ -137,9 +137,7 @@
             <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
-            
             <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
-            
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
         </div>
 
@@ -336,7 +334,6 @@
             ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
 
-            // 1. Vẽ Tên (Đã thu nhỏ size mặc định từ 60 -> 52 và đẩy lên tọa độ Y: 1140)
             let bNameFontSize = 52; 
             const maxBNameWidth = 880; 
             ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
@@ -347,7 +344,6 @@
             }
             ctx.fillText(fullName, canvas.width / 2, 1140);
 
-            // 2. Vẽ Phòng Ban (Nằm dưới tên - Tọa độ Y: 1195)
             let bDeptFontSize = 32; 
             ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-SemiBold"';
             
@@ -357,7 +353,6 @@
             }
             ctx.fillText(department, canvas.width / 2, 1195);
 
-            // 3. Vẽ Ngày Sinh (Thu nhỏ từ 90 -> 75 và căn chỉnh tọa độ Y: 1280)
             ctx.font = 'normal 75px "SVN-IvyMode-Italic"'; 
             ctx.fillText(bDate, canvas.width / 2, 1280);
             
@@ -402,12 +397,26 @@
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
 
+            // --- ĐÃ KHẮC PHỤC LỖI TRÀN ẢNH VÀ TỈ LỆ ZOOM QUÁ TO ---
             if (img) {
-                const i_imgX = 140, i_imgY = 280, i_imgW = 320, i_imgH = 420;
-                const scale = Math.max(i_imgW / img.width, i_imgH / img.height);
-                const x = (i_imgW / 2) - (img.width / 2) * scale;
-                const y = (i_imgH / 2) - (img.height / 2) * scale;
-                ctx.drawImage(img, i_imgX + x, i_imgY + y, img.width * scale, img.height * scale);
+                ctx.save();
+                // 1. Dùng Clip mask cắt gọt toàn bộ những phần lòi ra ngoài viền thẻ 600x960
+                ctx.beginPath();
+                ctx.rect(0, 0, 600, 960);
+                ctx.clip();
+
+                // 2. Thu nhỏ lại thông số lỗ thủng để tỷ lệ zoom không bị to làm mất đầu người
+                // Tọa độ và kích thước này được set sát với lỗ đục thực tế trên bgnv.png cộng thêm 5px an toàn
+                // (Nếu ảnh vào vẫn hơi to/nhỏ hoặc lệch, bạn chỉ cần thay đổi nhẹ 4 con số bên dưới)
+                const holeX = 150, holeY = 270, holeW = 300, holeH = 390;
+                
+                const scale = Math.max(holeW / img.width, holeH / img.height);
+                const x = (holeW / 2) - (img.width / 2) * scale;
+                const y = (holeH / 2) - (img.height / 2) * scale;
+                
+                ctx.drawImage(img, holeX + x, holeY + y, img.width * scale, img.height * scale);
+                
+                ctx.restore();
             }
 
             if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
@@ -444,6 +453,75 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
+        // --- Đã sửa chức năng preview riêng cho Thẻ NV ---
+        // Hàm này chỉ chuyên dùng để vẽ preview riêng 1 thẻ (Không dùng chung với file dàn A4)
+        function drawIdCardPreviewLayout() {
+            // Lấy tạm dữ liệu của thẻ số 1 để preview trên web
+            let img = idCardImages[1];
+            let fullName = document.getElementById('i_fullName_1').value.toUpperCase();
+            let rawCode = document.getElementById('i_empCode_1').value.toUpperCase();
+            let empCode = rawCode ? "AVH" + rawCode : "";
+            let position = document.getElementById('i_pos_1').value;
+
+            if (img) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(0, 0, 600, 960);
+                ctx.clip();
+
+                const holeX = 150, holeY = 270, holeW = 300, holeH = 390;
+                const scale = Math.max(holeW / img.width, holeH / img.height);
+                const x = (holeW / 2) - (img.width / 2) * scale;
+                const y = (holeH / 2) - (img.height / 2) * scale;
+                
+                ctx.drawImage(img, holeX + x, holeY + y, img.width * scale, img.height * scale);
+                ctx.restore();
+            }
+
+            if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
+                ctx.drawImage(assets.idCardBg, 0, 0, 600, 960);
+            }
+
+            ctx.fillStyle = '#012b3f'; 
+            ctx.textAlign = 'center';
+            let nameFontSize = 38; 
+            const maxIdNameWidth = 480; 
+            ctx.font = '800 ' + nameFontSize + 'px "Manrope"'; 
+            while (ctx.measureText(fullName).width > maxIdNameWidth && nameFontSize > 15) {
+                nameFontSize--; ctx.font = '800 ' + nameFontSize + 'px "Manrope"';
+            }
+            ctx.fillText(fullName, 300, 740);
+
+            let row1_Y = 790;
+            ctx.font = '500 20px "Manrope"'; ctx.textAlign = 'left';
+            if(empCode) ctx.fillText('Mã nhân viên:', 120, row1_Y);
+            ctx.font = '600 20px "Manrope"'; ctx.textAlign = 'right';
+            if(empCode) ctx.fillText(empCode, 480, row1_Y);
+
+            let row2_Y = 825;
+            ctx.font = '500 20px "Manrope"'; ctx.textAlign = 'left';
+            if(position) ctx.fillText('Chức danh:', 120, row2_Y);
+            ctx.font = '600 20px "Manrope"'; ctx.textAlign = 'right';
+            if(position) ctx.fillText(position, 480, row2_Y);
+        }
+
+        // --- Cập nhật lại logic chọn hàm Draw Canvas ---
+        // Sửa lại dòng này để khung Preview hiện đúng 1 thẻ (Không phải load trang A4 lúc đang xem trước)
+        // Dòng drawA4IdCardsLayout() chỉ nên chạy lúc ấn nút Tải File PDF.
+        const originalDrawCanvas = drawCanvas;
+        drawCanvas = function() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (currentTab === 'welcome') {
+                drawWelcomeLayout();
+            } else if (currentTab === 'birthday') {
+                drawBirthdayLayout();
+            } else if (currentTab === 'idcard') {
+                drawIdCardPreviewLayout(); 
+            }
+        }
+
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
@@ -454,9 +532,7 @@
                 linkW.href = canvas.toDataURL('image/png');
                 linkW.click();
 
-                setTimeout(() => {
-                    generateIdCardPDF();
-                }, 500);
+                setTimeout(() => { generateIdCardPDF(); }, 500);
 
             } else if (type === 'birthday') {
                 const name = document.getElementById('b_fullName').value.replace(/ /g, '_');
@@ -471,15 +547,18 @@
         }
 
         function generateIdCardPDF() {
+            // Chuyển Canvas sang chế độ A4 để vẽ 8 thẻ
             canvas.width = 3508; canvas.height = 2480;
-            drawCanvas(); 
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawA4IdCardsLayout(); 
             
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-            
             doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 297, 210);
             doc.save('AVH_Trang_In_The_Nhan_Vien.pdf');
 
+            // Trả lại Preview
             setTimeout(() => { switchTab(currentTab); }, 100);
         }
     </script>
