@@ -57,11 +57,10 @@
             display: block;
         }
 
-        /* ĐÃ SỬA LỖI BÓP KHUNG Ở ĐÂY */
         .controls {
             width: 450px;
-            min-width: 450px; /* Bắt buộc chiều rộng tối thiểu */
-            flex-shrink: 0; /* Ngăn trình duyệt tự động ép nhỏ khung này */
+            min-width: 450px;
+            flex-shrink: 0;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -73,7 +72,7 @@
         
         .preview-container {
             flex-grow: 1;
-            min-width: 0; /* Trick của CSS Flexbox để ngăn canvas tràn ra đẩy khung bên trái */
+            min-width: 0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -138,6 +137,9 @@
             <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
             <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
+            
+            <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
+            
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
         </div>
 
@@ -328,12 +330,14 @@
             if (assets.ball2.complete && assets.ball2.naturalHeight !== 0) ctx.drawImage(assets.ball2, 0, 0, canvas.width, canvas.height);
 
             const fullName = document.getElementById('b_fullName').value.toUpperCase();
+            const department = document.getElementById('b_department').value.toUpperCase();
             const bDate = document.getElementById('b_date').value;
 
             ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
 
-            let bNameFontSize = 60; 
+            // 1. Vẽ Tên (Đã thu nhỏ size mặc định từ 60 -> 52 và đẩy lên tọa độ Y: 1140)
+            let bNameFontSize = 52; 
             const maxBNameWidth = 880; 
             ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
             
@@ -341,10 +345,21 @@
                 bNameFontSize--;
                 ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1160);
+            ctx.fillText(fullName, canvas.width / 2, 1140);
 
-            ctx.font = 'normal 90px "SVN-IvyMode-Italic"'; 
-            ctx.fillText(bDate, canvas.width / 2, 1260);
+            // 2. Vẽ Phòng Ban (Nằm dưới tên - Tọa độ Y: 1195)
+            let bDeptFontSize = 32; 
+            ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-SemiBold"';
+            
+            while (ctx.measureText(department).width > maxBNameWidth && bDeptFontSize > 15) {
+                bDeptFontSize--;
+                ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-SemiBold"';
+            }
+            ctx.fillText(department, canvas.width / 2, 1195);
+
+            // 3. Vẽ Ngày Sinh (Thu nhỏ từ 90 -> 75 và căn chỉnh tọa độ Y: 1280)
+            ctx.font = 'normal 75px "SVN-IvyMode-Italic"'; 
+            ctx.fillText(bDate, canvas.width / 2, 1280);
             
             ctx.shadowColor = 'transparent';
         }
