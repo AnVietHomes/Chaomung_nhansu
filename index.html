@@ -273,7 +273,6 @@
             } else if (currentTab === 'birthday') {
                 drawBirthdayLayout();
             } else if (currentTab === 'idcard') {
-                // Khôi phục lại bản xem trước toàn trang A4 để xem được thẻ 2->8
                 drawA4IdCardsLayout();
             }
         }
@@ -361,7 +360,6 @@
         }
 
         function drawA4IdCardsLayout() {
-            // Cài đặt vị trí căn lề cho trang in A4 chuẩn
             const cardW = 638; 
             const cardH = 1004; 
             const gapX = 59; 
@@ -370,9 +368,13 @@
             const startY = 206; 
 
             for(let i = 1; i <= 8; i++) {
-                let name = document.getElementById('i_fullName_'+i).value.toUpperCase();
+                let name = document.getElementById('i_fullName_'+i).value.trim();
+                let code = document.getElementById('i_empCode_'+i).value.trim();
+                let pos = document.getElementById('i_pos_'+i).value.trim();
                 let img = idCardImages[i];
-                if(name === "" && !img) continue; // Thẻ trống sẽ tự động bỏ qua không in
+                
+                // ĐÃ FIX: Chỉ cần 1 trong các ô có dữ liệu là hệ thống sẽ vẽ thẻ đó ra
+                if(name === "" && code === "" && pos === "" && !img) continue; 
 
                 let col = (i - 1) % 4; 
                 let row = Math.floor((i - 1) / 4); 
@@ -382,7 +384,6 @@
                 ctx.save();
                 ctx.translate(x, y);
 
-                // Đường đứt khúc cắt thẻ
                 ctx.strokeStyle = '#cccccc';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([15, 10]); 
@@ -402,28 +403,33 @@
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
 
-            // --- GIẢI PHÁP SỬA LỖI TRÀN ẢNH NGANG & KÍCH THƯỚC ZOOM LỚN ---
+            // --- ĐÃ FIX: TỌA ĐỘ LỖ THỦNG VÀ TỶ LỆ SCALE ---
             if (img) {
                 ctx.save();
                 
-                // Khung cắt ảnh (Clip Mask) - Xác định vừa đúng khoảng trống lỗ đục của thẻ (Dư ra 5px mỗi chiều để không lộ viền)
-                // Kích thước này (290x380) sẽ đảm bảo ảnh không bao giờ tràn ra ngoài lề thẻ hay chạm vào chữ
-                const holeX = 155, holeY = 255, holeW = 290, holeH = 380;
+                // Thu nhỏ kích thước khung cắt ảnh xuống còn 250x340px và canh giữa thẻ (Ngay dưới chữ Thẻ Nhân Viên)
+                // Điều này giúp ảnh vừa vặn, không bị phóng to làm mất đầu, mất vai
+                const holeW = 250;
+                const holeH = 340;
+                const holeX = (600 - holeW) / 2; // Tự động căn ra giữa chiều ngang = 175
+                const holeY = 285; 
                 
+                // Tạo Clip Mask chặt chẽ để không lòi ảnh ra khỏi viền trắng dưới bất kỳ tỷ lệ ảnh tải lên nào
                 ctx.beginPath();
                 if(ctx.roundRect) {
-                    ctx.roundRect(holeX, holeY, holeW, holeH, 15);
+                    ctx.roundRect(holeX - 2, holeY - 2, holeW + 4, holeH + 4, 15);
                 } else {
-                    ctx.rect(holeX, holeY, holeW, holeH);
+                    ctx.rect(holeX - 2, holeY - 2, holeW + 4, holeH + 4);
                 }
                 ctx.clip();
 
-                // Tính toán lại tỷ lệ Scale dựa trên kích thước giới hạn (holeW, holeH) thay vì tỷ lệ khung to cũ
                 const scale = Math.max(holeW / img.width, holeH / img.height);
-                const x = (holeW / 2) - (img.width / 2) * scale;
-                const y = (holeH / 2) - (img.height / 2) * scale;
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const drawX = holeX + (holeW - drawW) / 2;
+                const drawY = holeY + (holeH - drawH) / 2;
                 
-                ctx.drawImage(img, holeX + x, holeY + y, img.width * scale, img.height * scale);
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
                 
                 ctx.restore();
             }
