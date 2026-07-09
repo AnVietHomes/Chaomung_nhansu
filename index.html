@@ -143,7 +143,7 @@
 
         <div id="idcard-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('idcard')" style="background-color: #28a745;">⬇ TẢI FILE IN PDF (KHỔ A4)</button>
-            <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Trang giấy sẽ tự động chừa trống nếu bạn không nhập thông tin ở các thẻ bên dưới.</p>
+            <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Màn hình xem trước hiển thị trực tiếp giao diện dàn trang in A4. Vị trí nào bạn không nhập dữ liệu sẽ tự động được làm trống.</p>
             
             <div id="idcard-list-container"></div>
         </div>
@@ -181,7 +181,7 @@
 
         const idCardContainer = document.getElementById('idcard-list-container');
         for (let i = 1; i <= 8; i++) {
-            let label = i === 1 ? `<span style="color: #ff6b6b; font-size:12px;">(Tự động đồng bộ từ tab Chào mừng)</span>` : "";
+            let label = i === 1 ? `<span style="color: #ff6b6b; font-size:12px;">(Đồng bộ từ tab Chào mừng)</span>` : "";
             idCardContainer.innerHTML += `
                 <div class="card-block">
                     <h4>Thẻ số ${i} ${label}</h4>
@@ -273,6 +273,7 @@
             } else if (currentTab === 'birthday') {
                 drawBirthdayLayout();
             } else if (currentTab === 'idcard') {
+                // Khôi phục lại bản xem trước toàn trang A4 để xem được thẻ 2->8
                 drawA4IdCardsLayout();
             }
         }
@@ -360,6 +361,7 @@
         }
 
         function drawA4IdCardsLayout() {
+            // Cài đặt vị trí căn lề cho trang in A4 chuẩn
             const cardW = 638; 
             const cardH = 1004; 
             const gapX = 59; 
@@ -370,7 +372,7 @@
             for(let i = 1; i <= 8; i++) {
                 let name = document.getElementById('i_fullName_'+i).value.toUpperCase();
                 let img = idCardImages[i];
-                if(name === "" && !img) continue; 
+                if(name === "" && !img) continue; // Thẻ trống sẽ tự động bỏ qua không in
 
                 let col = (i - 1) % 4; 
                 let row = Math.floor((i - 1) / 4); 
@@ -380,9 +382,12 @@
                 ctx.save();
                 ctx.translate(x, y);
 
+                // Đường đứt khúc cắt thẻ
                 ctx.strokeStyle = '#cccccc';
                 ctx.lineWidth = 2;
+                ctx.setLineDash([15, 10]); 
                 ctx.strokeRect(0, 0, cardW, cardH);
+                ctx.setLineDash([]); 
 
                 ctx.scale(cardW / 600, cardH / 960);
                 drawSingleIdCard(i);
@@ -397,19 +402,23 @@
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
 
-            // --- ĐÃ KHẮC PHỤC LỖI TRÀN ẢNH VÀ TỈ LỆ ZOOM QUÁ TO ---
+            // --- GIẢI PHÁP SỬA LỖI TRÀN ẢNH NGANG & KÍCH THƯỚC ZOOM LỚN ---
             if (img) {
                 ctx.save();
-                // 1. Dùng Clip mask cắt gọt toàn bộ những phần lòi ra ngoài viền thẻ 600x960
+                
+                // Khung cắt ảnh (Clip Mask) - Xác định vừa đúng khoảng trống lỗ đục của thẻ (Dư ra 5px mỗi chiều để không lộ viền)
+                // Kích thước này (290x380) sẽ đảm bảo ảnh không bao giờ tràn ra ngoài lề thẻ hay chạm vào chữ
+                const holeX = 155, holeY = 255, holeW = 290, holeH = 380;
+                
                 ctx.beginPath();
-                ctx.rect(0, 0, 600, 960);
+                if(ctx.roundRect) {
+                    ctx.roundRect(holeX, holeY, holeW, holeH, 15);
+                } else {
+                    ctx.rect(holeX, holeY, holeW, holeH);
+                }
                 ctx.clip();
 
-                // 2. Thu nhỏ lại thông số lỗ thủng để tỷ lệ zoom không bị to làm mất đầu người
-                // Tọa độ và kích thước này được set sát với lỗ đục thực tế trên bgnv.png cộng thêm 5px an toàn
-                // (Nếu ảnh vào vẫn hơi to/nhỏ hoặc lệch, bạn chỉ cần thay đổi nhẹ 4 con số bên dưới)
-                const holeX = 150, holeY = 270, holeW = 300, holeH = 390;
-                
+                // Tính toán lại tỷ lệ Scale dựa trên kích thước giới hạn (holeW, holeH) thay vì tỷ lệ khung to cũ
                 const scale = Math.max(holeW / img.width, holeH / img.height);
                 const x = (holeW / 2) - (img.width / 2) * scale;
                 const y = (holeH / 2) - (img.height / 2) * scale;
@@ -453,75 +462,6 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
-        // --- Đã sửa chức năng preview riêng cho Thẻ NV ---
-        // Hàm này chỉ chuyên dùng để vẽ preview riêng 1 thẻ (Không dùng chung với file dàn A4)
-        function drawIdCardPreviewLayout() {
-            // Lấy tạm dữ liệu của thẻ số 1 để preview trên web
-            let img = idCardImages[1];
-            let fullName = document.getElementById('i_fullName_1').value.toUpperCase();
-            let rawCode = document.getElementById('i_empCode_1').value.toUpperCase();
-            let empCode = rawCode ? "AVH" + rawCode : "";
-            let position = document.getElementById('i_pos_1').value;
-
-            if (img) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.rect(0, 0, 600, 960);
-                ctx.clip();
-
-                const holeX = 150, holeY = 270, holeW = 300, holeH = 390;
-                const scale = Math.max(holeW / img.width, holeH / img.height);
-                const x = (holeW / 2) - (img.width / 2) * scale;
-                const y = (holeH / 2) - (img.height / 2) * scale;
-                
-                ctx.drawImage(img, holeX + x, holeY + y, img.width * scale, img.height * scale);
-                ctx.restore();
-            }
-
-            if (assets.idCardBg.complete && assets.idCardBg.naturalHeight !== 0) {
-                ctx.drawImage(assets.idCardBg, 0, 0, 600, 960);
-            }
-
-            ctx.fillStyle = '#012b3f'; 
-            ctx.textAlign = 'center';
-            let nameFontSize = 38; 
-            const maxIdNameWidth = 480; 
-            ctx.font = '800 ' + nameFontSize + 'px "Manrope"'; 
-            while (ctx.measureText(fullName).width > maxIdNameWidth && nameFontSize > 15) {
-                nameFontSize--; ctx.font = '800 ' + nameFontSize + 'px "Manrope"';
-            }
-            ctx.fillText(fullName, 300, 740);
-
-            let row1_Y = 790;
-            ctx.font = '500 20px "Manrope"'; ctx.textAlign = 'left';
-            if(empCode) ctx.fillText('Mã nhân viên:', 120, row1_Y);
-            ctx.font = '600 20px "Manrope"'; ctx.textAlign = 'right';
-            if(empCode) ctx.fillText(empCode, 480, row1_Y);
-
-            let row2_Y = 825;
-            ctx.font = '500 20px "Manrope"'; ctx.textAlign = 'left';
-            if(position) ctx.fillText('Chức danh:', 120, row2_Y);
-            ctx.font = '600 20px "Manrope"'; ctx.textAlign = 'right';
-            if(position) ctx.fillText(position, 480, row2_Y);
-        }
-
-        // --- Cập nhật lại logic chọn hàm Draw Canvas ---
-        // Sửa lại dòng này để khung Preview hiện đúng 1 thẻ (Không phải load trang A4 lúc đang xem trước)
-        // Dòng drawA4IdCardsLayout() chỉ nên chạy lúc ấn nút Tải File PDF.
-        const originalDrawCanvas = drawCanvas;
-        drawCanvas = function() {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            if (currentTab === 'welcome') {
-                drawWelcomeLayout();
-            } else if (currentTab === 'birthday') {
-                drawBirthdayLayout();
-            } else if (currentTab === 'idcard') {
-                drawIdCardPreviewLayout(); 
-            }
-        }
-
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
@@ -547,19 +487,14 @@
         }
 
         function generateIdCardPDF() {
-            // Chuyển Canvas sang chế độ A4 để vẽ 8 thẻ
             canvas.width = 3508; canvas.height = 2480;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drawA4IdCardsLayout(); 
+            drawCanvas(); 
             
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            
             doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 297, 210);
             doc.save('AVH_Trang_In_The_Nhan_Vien.pdf');
-
-            // Trả lại Preview
-            setTimeout(() => { switchTab(currentTab); }, 100);
         }
     </script>
 </body>
