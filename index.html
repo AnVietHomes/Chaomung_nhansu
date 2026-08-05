@@ -97,10 +97,10 @@
         
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #333; }
-        input[type="text"], input[type="file"], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Barlow', Arial, sans-serif; font-size: 14px; }
+        input[type="text"], input[type="file"], select, input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Barlow', Arial, sans-serif; font-size: 14px; }
         
         .input-group { display: flex; align-items: stretch; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-        .input-group-addon { padding: 8px 12px; background-color: #e9ecef; color: #495057; font-weight: 700; border-right: 1px solid #ccc; display: flex; align-items: center; }
+        .input-group-addon { padding: 8px 12px; background-color: #e9ecef; color: #495057; font-weight: 700; border-right: 1px solid #ccc; display: flex; align-items: center; justify-content: center;}
         .input-group input { border: none; border-radius: 0; margin: 0; flex-grow: 1; }
         .input-group input:focus { outline: none; }
 
@@ -120,6 +120,7 @@
             <button class="tab-btn" onclick="switchTab('idcard')">Thẻ NV</button>
         </div>
 
+        <!-- FORM CHÀO MỪNG -->
         <div id="welcome-form" class="tab-content active">
             <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG (+THẺ NV)</button>
             <div class="form-group"><label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
@@ -133,6 +134,7 @@
             <div class="form-group"><label>Khối kinh doanh:</label><input type="text" id="w_businessBlock" value="A1" oninput="drawCanvas()"></div>
         </div>
 
+        <!-- FORM SINH NHẬT -->
         <div id="birthday-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
@@ -141,6 +143,7 @@
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
         </div>
 
+        <!-- FORM THẺ NHÂN VIÊN (Dàn A4) -->
         <div id="idcard-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('idcard')" style="background-color: #28a745;">⬇ TẢI FILE IN PDF (KHỔ A4)</button>
             <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Màn hình xem trước hiển thị trực tiếp giao diện dàn trang in A4. Vị trí nào bạn không nhập dữ liệu sẽ tự động được làm trống.</p>
@@ -186,6 +189,22 @@
                 <div class="card-block">
                     <h4>Thẻ số ${i} ${label}</h4>
                     <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" accept="image/*" onchange="loadIdCardImage(event, ${i})"></div>
+                    
+                    <!-- BOX CĂN CHỈNH ẢNH MỚI BỔ SUNG -->
+                    <div class="form-group">
+                        <label>Căn chỉnh ảnh (Tỷ lệ % | Kéo Lên/Xuống):</label>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ ảnh">
+                                <span class="input-group-addon" style="font-size: 12px;">🔍</span>
+                                <input type="number" id="i_zoom_${i}" value="100" step="2" min="10" max="300" oninput="drawCanvas()">
+                            </div>
+                            <div class="input-group" style="flex: 1;" title="Kéo ảnh Lên / Xuống">
+                                <span class="input-group-addon" style="font-size: 12px;">↕️</span>
+                                <input type="number" id="i_offsetY_${i}" value="0" step="5" oninput="drawCanvas()">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group"><label>Họ và Tên:</label><input type="text" id="i_fullName_${i}" oninput="drawCanvas()"></div>
                     <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="i_empCode_${i}" oninput="drawCanvas()" maxlength="5"></div></div>
                     <div class="form-group"><label>Chức danh:</label><input type="text" id="i_pos_${i}" oninput="drawCanvas()"></div>
@@ -197,7 +216,12 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 let img = new Image();
-                img.onload = function() { drawCanvas(); }
+                img.onload = function() { 
+                    // Reset lại zoom và offset khi tải ảnh mới
+                    document.getElementById('i_zoom_'+index).value = 100;
+                    document.getElementById('i_offsetY_'+index).value = 0;
+                    drawCanvas(); 
+                }
                 img.src = e.target.result;
                 idCardImages[index] = img;
             }
@@ -212,7 +236,11 @@
                 userImgWelcome.src = event.target.result;
 
                 let imgForCard = new Image();
-                imgForCard.onload = function() { drawCanvas(); }
+                imgForCard.onload = function() { 
+                    document.getElementById('i_zoom_1').value = 100;
+                    document.getElementById('i_offsetY_1').value = 0;
+                    drawCanvas(); 
+                }
                 imgForCard.src = event.target.result;
                 idCardImages[1] = imgForCard; 
             }
@@ -373,7 +401,6 @@
                 let pos = document.getElementById('i_pos_'+i).value.trim();
                 let img = idCardImages[i];
                 
-                // ĐÃ FIX: Chỉ cần 1 trong các ô có dữ liệu là hệ thống sẽ vẽ thẻ đó ra
                 if(name === "" && code === "" && pos === "" && !img) continue; 
 
                 let col = (i - 1) % 4; 
@@ -402,19 +429,20 @@
             let rawCode = document.getElementById('i_empCode_'+index).value.toUpperCase();
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
+            
+            // Lấy thông số căn chỉnh thủ công
+            let zoomPct = document.getElementById('i_zoom_'+index) ? parseFloat(document.getElementById('i_zoom_'+index).value) / 100 : 1;
+            let offsetY = document.getElementById('i_offsetY_'+index) ? parseFloat(document.getElementById('i_offsetY_'+index).value) : 0;
 
-            // --- ĐÃ FIX: TỌA ĐỘ LỖ THỦNG VÀ TỶ LỆ SCALE ---
             if (img) {
                 ctx.save();
                 
-                // Thu nhỏ kích thước khung cắt ảnh xuống còn 250x340px và canh giữa thẻ (Ngay dưới chữ Thẻ Nhân Viên)
-                // Điều này giúp ảnh vừa vặn, không bị phóng to làm mất đầu, mất vai
-                const holeW = 250;
-                const holeH = 340;
-                const holeX = (600 - holeW) / 2; // Tự động căn ra giữa chiều ngang = 175
-                const holeY = 285; 
+                // Thu nhỏ kích thước lỗ đục xuống gọn hơn nữa (220x300px thay vì 250x340px)
+                const holeW = 220;
+                const holeH = 300;
+                const holeX = (600 - holeW) / 2; // = 190
+                const holeY = 295; 
                 
-                // Tạo Clip Mask chặt chẽ để không lòi ảnh ra khỏi viền trắng dưới bất kỳ tỷ lệ ảnh tải lên nào
                 ctx.beginPath();
                 if(ctx.roundRect) {
                     ctx.roundRect(holeX - 2, holeY - 2, holeW + 4, holeH + 4, 15);
@@ -423,11 +451,15 @@
                 }
                 ctx.clip();
 
-                const scale = Math.max(holeW / img.width, holeH / img.height);
-                const drawW = img.width * scale;
-                const drawH = img.height * scale;
+                // Tính toán tỷ lệ dựa trên zoom của người dùng
+                const baseScale = Math.max(holeW / img.width, holeH / img.height);
+                const finalScale = baseScale * zoomPct;
+                
+                const drawW = img.width * finalScale;
+                const drawH = img.height * finalScale;
                 const drawX = holeX + (holeW - drawW) / 2;
-                const drawY = holeY + (holeH - drawH) / 2;
+                // Áp dụng độ lệch Y
+                const drawY = holeY + (holeH - drawH) / 2 + offsetY;
                 
                 ctx.drawImage(img, drawX, drawY, drawW, drawH);
                 
