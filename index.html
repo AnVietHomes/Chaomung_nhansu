@@ -143,7 +143,7 @@
             <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
         </div>
 
-        <!-- FORM THẺ NHÂN VIÊN (Dàn A4) -->
+        <!-- FORM THẺ NHÂN VIÊN -->
         <div id="idcard-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('idcard')" style="background-color: #28a745;">⬇ TẢI FILE IN PDF (KHỔ A4)</button>
             <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Màn hình xem trước hiển thị trực tiếp giao diện dàn trang in A4. Vị trí nào bạn không nhập dữ liệu sẽ tự động được làm trống.</p>
@@ -190,7 +190,6 @@
                     <h4>Thẻ số ${i} ${label}</h4>
                     <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" accept="image/*" onchange="loadIdCardImage(event, ${i})"></div>
                     
-                    <!-- BOX CĂN CHỈNH ẢNH MỚI BỔ SUNG -->
                     <div class="form-group">
                         <label>Căn chỉnh ảnh (Tỷ lệ % | Kéo Lên/Xuống):</label>
                         <div style="display: flex; gap: 10px;">
@@ -217,7 +216,6 @@
             reader.onload = function(e) {
                 let img = new Image();
                 img.onload = function() { 
-                    // Reset lại zoom và offset khi tải ảnh mới
                     document.getElementById('i_zoom_'+index).value = 100;
                     document.getElementById('i_offsetY_'+index).value = 0;
                     drawCanvas(); 
@@ -430,35 +428,32 @@
             let empCode = rawCode ? "AVH" + rawCode : "";
             let position = document.getElementById('i_pos_'+index).value;
             
-            // Lấy thông số căn chỉnh thủ công
             let zoomPct = document.getElementById('i_zoom_'+index) ? parseFloat(document.getElementById('i_zoom_'+index).value) / 100 : 1;
             let offsetY = document.getElementById('i_offsetY_'+index) ? parseFloat(document.getElementById('i_offsetY_'+index).value) : 0;
 
             if (img) {
                 ctx.save();
                 
-                // Thu nhỏ kích thước lỗ đục xuống gọn hơn nữa (220x300px thay vì 250x340px)
-                const holeW = 220;
-                const holeH = 300;
-                const holeX = (600 - holeW) / 2; // = 190
-                const holeY = 295; 
+                // ĐÃ FIX: Nới rộng kích thước vùng cắt để lấp đầy toàn bộ khoảng hở
+                const holeW = 270;
+                const holeH = 370;
+                const holeX = (600 - holeW) / 2; // Canh giữa ngang
+                const holeY = 270; 
                 
                 ctx.beginPath();
                 if(ctx.roundRect) {
-                    ctx.roundRect(holeX - 2, holeY - 2, holeW + 4, holeH + 4, 15);
+                    ctx.roundRect(holeX, holeY, holeW, holeH, 15);
                 } else {
-                    ctx.rect(holeX - 2, holeY - 2, holeW + 4, holeH + 4);
+                    ctx.rect(holeX, holeY, holeW, holeH);
                 }
                 ctx.clip();
 
-                // Tính toán tỷ lệ dựa trên zoom của người dùng
                 const baseScale = Math.max(holeW / img.width, holeH / img.height);
                 const finalScale = baseScale * zoomPct;
                 
                 const drawW = img.width * finalScale;
                 const drawH = img.height * finalScale;
                 const drawX = holeX + (holeW - drawW) / 2;
-                // Áp dụng độ lệch Y
                 const drawY = holeY + (holeH - drawH) / 2 + offsetY;
                 
                 ctx.drawImage(img, drawX, drawY, drawW, drawH);
