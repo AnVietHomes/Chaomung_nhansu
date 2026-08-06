@@ -178,10 +178,10 @@
         <div id="welcome-form" class="tab-content active">
             <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG (+THẺ NV)</button>
             <div class="form-group"><label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
-            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. ĐỐ ANH ĐOÁN ĐƯỢC" oninput="syncToIdCard(); drawCanvas()"></div>
+            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. NGUYỄN TRUNG KIÊN" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chi nhánh / Nơi làm việc:</label><select id="w_branch" onchange="drawCanvas()"><option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option><option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option></select></div>
-            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="000" oninput="syncToIdCard(); drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
+            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="012" oninput="syncToIdCard(); drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
             <div class="form-group"><label>Ngày vào công ty:</label><input type="text" id="w_joinDate" value="12/06/2026" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="04/11/1988" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="Chuyên viên Kinh doanh" oninput="syncToIdCard(); drawCanvas()"></div>
@@ -223,7 +223,10 @@
 
             <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐỖ ANH ĐOÁN ĐƯỢC" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV11" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 06/08):</label><input type="text" id="b_date" value="06/08" oninput="drawCanvas()"></div>
+            <div class="form-group">
+                <label>Ngày tháng sinh nhật (Nhập số tự động ra /):</label>
+                <input type="text" id="b_date" value="06/08" oninput="formatBirthdayInput(event)" maxlength="5" placeholder="DD/MM">
+            </div>
         </div>
 
         <!-- FORM THẺ NHÂN VIÊN -->
@@ -284,6 +287,16 @@
                     <div class="form-group"><label>Chức danh:</label><input type="text" id="i_pos_${i}" oninput="drawCanvas()"></div>
                 </div>
             `;
+        }
+
+        // HÀM ĐỊNH DẠNG NGÀY THÁNG THÔNG MINH
+        function formatBirthdayInput(e) {
+            let input = e.target;
+            let value = input.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.slice(0, 4);
+            if (value.length > 2) value = value.slice(0, 2) + '/' + value.slice(2);
+            input.value = value;
+            drawCanvas();
         }
 
         function loadIdCardImage(event, index) {
@@ -383,9 +396,6 @@
             }
         }
 
-        // ==========================================
-        // LAYOUT 1: CHÀO MỪNG
-        // ==========================================
         function drawWelcomeLayout() {
             if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             if (userImgWelcome) {
@@ -422,9 +432,6 @@
             ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
-        // ==========================================
-        // LAYOUT 2: SINH NHẬT
-        // ==========================================
         function drawBirthdayLayout() {
             const isDarkTheme = document.getElementById('b_theme_toggle').checked;
             const bgImage = isDarkTheme ? assets.birthdayBgDark : assets.birthdayBgLight;
@@ -467,6 +474,7 @@
 
             ctx.fillStyle = '#ffffff'; 
             
+            // Xử lý đổ bóng động thông minh (Chỉ áp dụng cho Tên và Phòng Ban)
             if (!isDarkTheme) {
                 ctx.shadowColor = 'rgba(210, 100, 50, 0.5)'; 
             } else {
@@ -476,7 +484,6 @@
             ctx.shadowOffsetX = 3; 
             ctx.shadowOffsetY = 3;
 
-            // Tên Nhân sự
             ctx.textAlign = 'center';
             let bNameFontSize = 75; 
             const maxBNameWidth = 900; 
@@ -488,7 +495,6 @@
             }
             ctx.fillText(fullName, canvas.width / 2, 1060); 
 
-            // Phòng Ban
             let bDeptFontSize = 45; 
             ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-Regular"';
             
@@ -499,22 +505,17 @@
             ctx.fillText(department, canvas.width / 2, 1140);
 
             // ==========================================
-            // KHOẢNG CÁCH NGÀY THÁNG ĐÃ ĐƯỢC THU HẸP LẠI
+            // TẮT ĐỔ BÓNG VÀ VẼ NGÀY THÁNG
             // ==========================================
+            ctx.shadowColor = 'transparent'; 
+
             ctx.textAlign = 'center';
             ctx.font = 'normal 90px "SVN-IvyMode-Regular"'; 
             const dateX = 850; 
-            
-            // Ép sát hàng Ngày và Tháng ôm gọn vào ngôi sao (Tâm ngôi sao ở Web là Y: 846)
-            ctx.fillText(dayPart, dateX, 845);  // Đáy chữ Ngày kéo gần ngôi sao hơn
-            ctx.fillText(monthPart, dateX, 925); // Đỉnh chữ Tháng nhích lên sát ngôi sao hơn
-            
-            ctx.shadowColor = 'transparent'; 
+            ctx.fillText(dayPart, dateX, 835);  
+            ctx.fillText(monthPart, dateX, 912); 
         }
 
-        // ==========================================
-        // LAYOUT 3: THẺ NHÂN VIÊN
-        // ==========================================
         function drawA4IdCardsLayout() {
             const cardW = 638; 
             const cardH = 1004; 
@@ -624,7 +625,6 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
-        // TẢI ẢNH XUỐNG
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
