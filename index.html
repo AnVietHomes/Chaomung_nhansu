@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-width=1.0">
     <title>Công cụ nội bộ AVH - Tạo ảnh tự động</title>
+    <!-- Nhúng font Barlow & Manrope từ Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Tích hợp thư viện jsPDF để tạo file PDF chuẩn khổ A4 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
+        /* Khai báo hệ thống Font SVN */
         @font-face {
             font-family: 'SVN-IvyMode-SemiBold';
             src: url('font/SVN-IvyMode-SemiBold.ttf') format('truetype');
@@ -18,6 +21,10 @@
         @font-face {
             font-family: 'SVN-IvyMode-Italic';
             src: url('font/SVN-IvyMode-Italic.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'SVN-IvyMode-Regular';
+            src: url('font/SVN-IvyMode-Regular.ttf') format('truetype');
         }
 
         body {
@@ -134,20 +141,47 @@
             <div class="form-group"><label>Khối kinh doanh:</label><input type="text" id="w_businessBlock" value="A1" oninput="drawCanvas()"></div>
         </div>
 
-        <!-- FORM SINH NHẬT -->
+        <!-- FORM SINH NHẬT MỚI -->
         <div id="birthday-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('birthday')">⬇ TẢI ẢNH SINH NHẬT</button>
+            
+            <div class="form-group">
+                <label>Chế độ nền:</label>
+                <select id="b_theme" onchange="drawCanvas()">
+                    <option value="light">Nền Sáng (nensang.png)</option>
+                    <option value="dark">Nền Tối (nentoi.png)</option>
+                </select>
+            </div>
+
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
-            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MS. BÙI THỊ QUỲNH CHI" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 13/06):</label><input type="text" id="b_date" value="13/06" oninput="drawCanvas()"></div>
+            
+            <div class="form-group">
+                <label>Căn chỉnh ảnh Sinh nhật (Zoom | Lên/Xuống | Trái/Phải):</label>
+                <div style="display: flex; gap: 5px;">
+                    <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ">
+                        <span class="input-group-addon" style="font-size: 11px;">🔍</span>
+                        <input type="number" id="b_zoom" value="100" step="2" oninput="drawCanvas()">
+                    </div>
+                    <div class="input-group" style="flex: 1;" title="Kéo Lên / Xuống">
+                        <span class="input-group-addon" style="font-size: 11px;">↕️</span>
+                        <input type="number" id="b_offsetY" value="0" step="5" oninput="drawCanvas()">
+                    </div>
+                    <div class="input-group" style="flex: 1;" title="Kéo Trái / Phải">
+                        <span class="input-group-addon" style="font-size: 11px;">↔️</span>
+                        <input type="number" id="b_offsetX" value="0" step="5" oninput="drawCanvas()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐÀO VĂN THẮNG" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV11" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Ngày tháng sinh nhật (Ví dụ: 06/08):</label><input type="text" id="b_date" value="06/08" oninput="drawCanvas()"></div>
         </div>
 
-        <!-- FORM THẺ NHÂN VIÊN -->
+        <!-- FORM THẺ NHÂN VIÊN (Dàn A4) -->
         <div id="idcard-form" class="tab-content">
             <button class="btn-download" onclick="downloadImage('idcard')" style="background-color: #28a745;">⬇ TẢI FILE IN PDF (KHỔ A4)</button>
             <p style="font-size: 13px; color: #666; font-style: italic; margin-bottom: 20px;">Màn hình xem trước hiển thị trực tiếp giao diện dàn trang in A4. Vị trí nào bạn không nhập dữ liệu sẽ tự động được làm trống.</p>
-            
             <div id="idcard-list-container"></div>
         </div>
     </div>
@@ -163,25 +197,23 @@
         let currentTab = 'welcome';
         let userImgWelcome = null;
         let userImgBirthday = null;
-        
         let idCardImages = new Array(9).fill(null);
 
+        // Khai báo tập hợp hình ảnh
         const assets = {
             welcomeBg: new Image(),
-            birthdayBg: new Image(),
             idCardBg: new Image(),
-            ball1: new Image(),
-            ball2: new Image(),
-            titleSn: new Image()
+            birthdayBgLight: new Image(),
+            birthdayBgDark: new Image()
         };
 
         assets.welcomeBg.src = 'image/bg.jpg';
-        assets.birthdayBg.src = 'image/bgsn.png'; 
         assets.idCardBg.src = 'image/bgnv.png'; 
-        assets.ball1.src = 'image/ball1.png';
-        assets.ball2.src = 'image/ball2.png';
-        assets.titleSn.src = 'image/titlesn.png';
+        // 2 nền sinh nhật mới
+        assets.birthdayBgLight.src = 'image/nensang.png';
+        assets.birthdayBgDark.src = 'image/nentoi.png';
 
+        // TẠO UI CHO THẺ NHÂN VIÊN
         const idCardContainer = document.getElementById('idcard-list-container');
         for (let i = 1; i <= 8; i++) {
             let label = i === 1 ? `<span style="color: #ff6b6b; font-size:12px;">(Đồng bộ từ tab Chào mừng)</span>` : "";
@@ -189,21 +221,19 @@
                 <div class="card-block">
                     <h4>Thẻ số ${i} ${label}</h4>
                     <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" accept="image/*" onchange="loadIdCardImage(event, ${i})"></div>
-                    
                     <div class="form-group">
                         <label>Căn chỉnh ảnh (Tỷ lệ % | Kéo Lên/Xuống):</label>
                         <div style="display: flex; gap: 10px;">
-                            <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ ảnh">
+                            <div class="input-group" style="flex: 1;">
                                 <span class="input-group-addon" style="font-size: 12px;">🔍</span>
                                 <input type="number" id="i_zoom_${i}" value="100" step="2" min="10" max="300" oninput="drawCanvas()">
                             </div>
-                            <div class="input-group" style="flex: 1;" title="Kéo ảnh Lên / Xuống">
+                            <div class="input-group" style="flex: 1;">
                                 <span class="input-group-addon" style="font-size: 12px;">↕️</span>
                                 <input type="number" id="i_offsetY_${i}" value="0" step="5" oninput="drawCanvas()">
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group"><label>Họ và Tên:</label><input type="text" id="i_fullName_${i}" oninput="drawCanvas()"></div>
                     <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="i_empCode_${i}" oninput="drawCanvas()" maxlength="5"></div></div>
                     <div class="form-group"><label>Chức danh:</label><input type="text" id="i_pos_${i}" oninput="drawCanvas()"></div>
@@ -211,6 +241,7 @@
             `;
         }
 
+        // TẢI ẢNH CÁC TAB
         function loadIdCardImage(event, index) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -249,7 +280,12 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 userImgBirthday = new Image();
-                userImgBirthday.onload = function() { drawCanvas(); }
+                userImgBirthday.onload = function() { 
+                    document.getElementById('b_zoom').value = 100;
+                    document.getElementById('b_offsetX').value = 0;
+                    document.getElementById('b_offsetY').value = 0;
+                    drawCanvas(); 
+                }
                 userImgBirthday.src = event.target.result;
             }
             if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
@@ -303,6 +339,9 @@
             }
         }
 
+        // ==========================================
+        // LAYOUT 1: CHÀO MỪNG
+        // ==========================================
         function drawWelcomeLayout() {
             if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             if (userImgWelcome) {
@@ -339,52 +378,103 @@
             ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
+        // ==========================================
+        // LAYOUT 2: SINH NHẬT BẢN MỚI
+        // ==========================================
         function drawBirthdayLayout() {
+            const theme = document.getElementById('b_theme').value;
+            const bgImage = theme === 'light' ? assets.birthdayBgLight : assets.birthdayBgDark;
+
+            // 1. VẼ ẢNH CHÂN DUNG (NẰM DƯỚI CÙNG LỖ THỦNG)
             if (userImgBirthday) {
-                const b_imgX = 265, b_imgY = 410, b_imgW = 550, b_imgH = 650;
-                const scale = Math.max(b_imgW / userImgBirthday.width, b_imgH / userImgBirthday.height);
-                const x = (b_imgW / 2) - (userImgBirthday.width / 2) * scale;
-                const y = (b_imgH / 2) - (userImgBirthday.height / 2) * scale;
-                ctx.drawImage(userImgBirthday, b_imgX + x, b_imgY + y, userImgBirthday.width * scale, userImgBirthday.height * scale);
+                ctx.save();
+                
+                let bZoom = parseFloat(document.getElementById('b_zoom').value) / 100;
+                let bOffsetX = parseFloat(document.getElementById('b_offsetX').value);
+                let bOffsetY = parseFloat(document.getElementById('b_offsetY').value);
+
+                // Ước lượng thông số vị trí vòng tròn đục lỗ (Bạn có thể tinh chỉnh lại X, Y, W, H nếu ảnh lỗ thủng tròn bị lệch)
+                const holeW = 650;
+                const holeH = 650;
+                const holeX = (1080 - holeW) / 2; // = 215 (Căn giữa)
+                const holeY = 320; 
+
+                // Tính toán tỷ lệ Zoom
+                const baseScale = Math.max(holeW / userImgBirthday.width, holeH / userImgBirthday.height);
+                const finalScale = baseScale * bZoom;
+                
+                const drawW = userImgBirthday.width * finalScale;
+                const drawH = userImgBirthday.height * finalScale;
+                const drawX = holeX + (holeW - drawW) / 2 + bOffsetX;
+                const drawY = holeY + (holeH - drawH) / 2 + bOffsetY;
+                
+                ctx.drawImage(userImgBirthday, drawX, drawY, drawW, drawH);
+                ctx.restore();
             }
 
-            if (assets.birthdayBg.complete && assets.birthdayBg.naturalHeight !== 0) ctx.drawImage(assets.birthdayBg, 0, 0, canvas.width, canvas.height);
-            if (assets.ball1.complete && assets.ball1.naturalHeight !== 0) ctx.drawImage(assets.ball1, 0, 0, canvas.width, canvas.height);
-            if (assets.titleSn.complete && assets.titleSn.naturalHeight !== 0) ctx.drawImage(assets.titleSn, 0, 0, canvas.width, canvas.height);
-            if (assets.ball2.complete && assets.ball2.naturalHeight !== 0) ctx.drawImage(assets.ball2, 0, 0, canvas.width, canvas.height);
+            // 2. VẼ ẢNH NỀN PNG TRONG SUỐT ĐÈ LÊN TRÊN
+            if (bgImage.complete && bgImage.naturalHeight !== 0) {
+                ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            }
 
+            // Lấy dữ liệu Text
             const fullName = document.getElementById('b_fullName').value.toUpperCase();
             const department = document.getElementById('b_department').value.toUpperCase();
-            const bDate = document.getElementById('b_date').value;
-
-            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
-
-            let bNameFontSize = 52; 
-            const maxBNameWidth = 880; 
-            ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
             
-            while (ctx.measureText(fullName).width > maxBNameWidth && bNameFontSize > 25) {
+            const bDate = document.getElementById('b_date').value; // Ví dụ: "06/08"
+            const dateParts = bDate.split('/');
+            const dayPart = dateParts[0] || "";
+            const monthPart = dateParts[1] || "";
+
+            ctx.fillStyle = '#ffffff'; 
+            
+            // Xử lý đổ bóng động: Nền sáng -> Bóng cam ấm | Nền tối -> Bóng đen sâu
+            if (theme === 'light') {
+                ctx.shadowColor = 'rgba(210, 100, 50, 0.5)'; 
+            } else {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'; 
+            }
+            ctx.shadowBlur = 12; 
+            ctx.shadowOffsetX = 3; 
+            ctx.shadowOffsetY = 3;
+
+            // 3. VẼ TÊN NHÂN SỰ
+            ctx.textAlign = 'center';
+            let bNameFontSize = 75; 
+            const maxBNameWidth = 900; // Giới hạn chiều rộng chữ
+            ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-Regular"';
+            
+            while (ctx.measureText(fullName).width > maxBNameWidth && bNameFontSize > 30) {
                 bNameFontSize--;
-                ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-SemiBold"';
+                ctx.font = 'normal ' + bNameFontSize + 'px "SVN-IvyMode-Regular"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1140);
+            ctx.fillText(fullName, canvas.width / 2, 1060); // Đẩy Y lên cao hơn mẫu cũ
 
-            let bDeptFontSize = 32; 
-            ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-SemiBold"';
+            // 4. VẼ PHÒNG BAN
+            let bDeptFontSize = 45; 
+            ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-Regular"';
             
-            while (ctx.measureText(department).width > maxBNameWidth && bDeptFontSize > 15) {
+            while (ctx.measureText(department).width > maxBNameWidth && bDeptFontSize > 20) {
                 bDeptFontSize--;
-                ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-SemiBold"';
+                ctx.font = 'normal ' + bDeptFontSize + 'px "SVN-IvyMode-Regular"';
             }
-            ctx.fillText(department, canvas.width / 2, 1195);
+            ctx.fillText(department, canvas.width / 2, 1140);
 
-            ctx.font = 'normal 75px "SVN-IvyMode-Italic"'; 
-            ctx.fillText(bDate, canvas.width / 2, 1280);
+            // 5. VẼ NGÀY THÁNG (Chia 2 dòng)
+            ctx.textAlign = 'center';
+            ctx.font = 'normal 90px "SVN-IvyMode-Regular"'; 
             
-            ctx.shadowColor = 'transparent';
+            // Tọa độ cụm Ngày Tháng (Canh lề phải theo mẫu, vị trí X khoảng 860)
+            const dateX = 860;
+            ctx.fillText(dayPart, dateX, 790); // Hàng Ngày (Ở trên dấu sao)
+            ctx.fillText(monthPart, dateX, 900); // Hàng Tháng (Ở dưới dấu sao)
+            
+            ctx.shadowColor = 'transparent'; // Tắt đổ bóng cho các tab khác
         }
 
+        // ==========================================
+        // LAYOUT 3: THẺ NHÂN VIÊN
+        // ==========================================
         function drawA4IdCardsLayout() {
             const cardW = 638; 
             const cardH = 1004; 
@@ -434,10 +524,9 @@
             if (img) {
                 ctx.save();
                 
-                // ĐÃ FIX: Nới rộng kích thước vùng cắt để lấp đầy toàn bộ khoảng hở
                 const holeW = 270;
                 const holeH = 370;
-                const holeX = (600 - holeW) / 2; // Canh giữa ngang
+                const holeX = (600 - holeW) / 2; 
                 const holeY = 270; 
                 
                 ctx.beginPath();
@@ -495,6 +584,7 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
+        // TẢI ẢNH XUỐNG
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
@@ -528,6 +618,8 @@
             
             doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, 297, 210);
             doc.save('AVH_Trang_In_The_Nhan_Vien.pdf');
+
+            setTimeout(() => { switchTab(currentTab); }, 100);
         }
     </script>
 </body>
