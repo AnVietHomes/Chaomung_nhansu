@@ -314,6 +314,7 @@
             `;
         }
 
+        // HÀM ĐỊNH DẠNG NGÀY THÁNG THÔNG MINH
         function formatBirthdayInput(e) {
             let input = e.target;
             let value = input.value.replace(/\D/g, '');
@@ -422,7 +423,7 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG 
+        // LAYOUT 1: CHÀO MỪNG (CẬP NHẬT KÍCH THƯỚC CLIP MASK)
         // ==========================================
         function drawWelcomeLayout() {
             if (userImgWelcome) {
@@ -432,12 +433,12 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // NỚI RỘNG KHUNG CLIP MASK ĐỂ CHÌM HẲN ẢNH XUỐNG DƯỚI LỚP KÍNH BG.PNG
-                // Tăng 20-30px mỗi chiều để xóa bỏ hoàn toàn ranh giới viền trắng
-                const holeW = 700; // Rộng hơn mức cũ (660) để lấp kín 2 bên
-                const holeH = 930; // Dài xuống tận Y: 1510 (Che khuất mức 1484)
+                // NỚI RỘNG VÀ KÉO DÀI CLIP MASK ĐỂ KHÔNG BAO GIỜ LỘ VIỀN TRẮNG
+                // Top kéo hẳn lên Y: 250, Bottom đâm sâu xuống Y: 1100, mở rộng hai bên
+                const holeW = 750; // Kéo tràn sang 2 bên
+                const holeH = 850; // Kéo dài để che hết phần kính mờ bên dưới
                 const holeX = (canvas.width - holeW) / 2; 
-                const holeY = 580; // Bắt đầu cao hơn 1 chút (Vượt mức 600)
+                const holeY = 250; 
                 
                 ctx.beginPath();
                 if(ctx.roundRect) {
