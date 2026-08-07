@@ -276,6 +276,11 @@
             birthdayBgDark: new Image()
         };
 
+        assets.welcomeBg.onload = drawCanvas;
+        assets.idCardBg.onload = drawCanvas;
+        assets.birthdayBgLight.onload = drawCanvas;
+        assets.birthdayBgDark.onload = drawCanvas;
+
         // Khai báo đường dẫn asset
         assets.welcomeBg.src = 'image/bg.png';
         assets.idCardBg.src = 'image/bgnv.png'; 
@@ -418,7 +423,7 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG 
+        // LAYOUT 1: CHÀO MỪNG (CẬP NHẬT CĂN LỀ TEXT)
         // ==========================================
         function drawWelcomeLayout() {
             if (userImgWelcome) {
@@ -428,10 +433,9 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // TỌA ĐỘ VÀ KÍCH THƯỚC CLIP MASK HOÀN HẢO DỰA TRÊN ZOOM CỦA NGƯỜI DÙNG
                 const holeW = 480;
                 const holeH = 630;
-                const holeX = (canvas.width - holeW) / 2; // Canh giữa = 300
+                const holeX = (canvas.width - holeW) / 2; 
                 const holeY = 355; 
                 
                 ctx.beginPath();
@@ -469,7 +473,7 @@
 
             ctx.fillStyle = '#ffffff'; 
 
-            // CỤM TÊN & PHÒNG BAN: Đã đẩy cao lên 40px để nằm chính giữa khối kính
+            // ĐẨY XUỐNG 25PX CHO CỤM TÊN VÀ PHÒNG BAN TRONG KHỐI KÍNH
             ctx.textAlign = 'center';
             let nameFontSize = 48; 
             const maxWNameWidth = 800; 
@@ -479,18 +483,18 @@
                 nameFontSize--;
                 ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1152); // Đẩy lên (Cũ: 1175)
+            ctx.fillText(fullName, canvas.width / 2, 1160); // Đã đẩy xuống +25px (cũ: 1135)
 
             ctx.font = '400 24px "Barlow"'; 
-            ctx.fillText(department, canvas.width / 2, 1175); // Đẩy lên (Cũ: 1220)
-            ctx.fillText(branch, canvas.width / 2, 1235); // Đẩy lên (Cũ: 1255)
+            ctx.fillText(department, canvas.width / 2, 1205); // Đã đẩy xuống +25px (cũ: 1180)
+            ctx.fillText(branch, canvas.width / 2, 1235); // Đã đẩy xuống +25px (cũ: 1210)
 
-            // CỤM THÔNG TIN CHI TIẾT: Đã đẩy cao lên 50px và giảm khoảng cách các dòng
+            // ĐẨY XUỐNG 30PX CHO CỤM THÔNG TIN CHI TIẾT BÊN NGOÀI
             ctx.font = '400 24px "Barlow"';
             const labelX = 200;
             const valueX = 880; 
-            let startY = 1310; // Đẩy lên (Cũ: 1340)
-            const lineSpacing = 34; // Khoảng cách khít lại
+            let startY = 1320; // Đã đẩy xuống +30px (cũ: 1290)
+            const lineSpacing = 34; 
 
             ctx.textAlign = 'left'; 
             ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
