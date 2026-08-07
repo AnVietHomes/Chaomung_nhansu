@@ -197,7 +197,7 @@
                 </div>
             </div>
 
-            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. ĐỖ ANH ĐOÁN ĐƯỢC" oninput="syncToIdCard(); drawCanvas()"></div>
+            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. ĐỐ ANH ĐOÁN ĐƯỢC" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chi nhánh / Nơi làm việc:</label><select id="w_branch" onchange="drawCanvas()"><option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option><option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option></select></div>
             <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="001" oninput="syncToIdCard(); drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
@@ -240,7 +240,7 @@
                 </div>
             </div>
 
-            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐỖ ANH ĐOÁN ĐƯỢC" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐỐ ANH ĐOÁN ĐƯỢC" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV11" oninput="drawCanvas()"></div>
             <div class="form-group">
                 <label>Ngày tháng sinh nhật (Nhập số tự động ra /):</label>
@@ -276,7 +276,7 @@
             birthdayBgDark: new Image()
         };
 
-        // File nền chào mừng đã được update thành định dạng png đục lỗ
+        // Khai báo đường dẫn asset
         assets.welcomeBg.src = 'image/bg.png';
         assets.idCardBg.src = 'image/bgnv.png'; 
         assets.birthdayBgLight.src = 'image/nensang.png';
@@ -396,7 +396,6 @@
             document.getElementById(`${tabName}-form`).classList.add('active');
 
             if (tabName === 'welcome') {
-                // Đổi sang tỷ lệ khung dọc mới cho Chào mừng
                 canvas.width = 1080; canvas.height = 1536;
             } else if (tabName === 'birthday') {
                 canvas.width = 1080; canvas.height = 1350; 
@@ -420,10 +419,9 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG (CẬP NHẬT TỶ LỆ DỌC MỚI)
+        // LAYOUT 1: CHÀO MỪNG (ĐÃ FIX TỌA ĐỘ VÀ KÍCH THƯỚC CLIP MASK)
         // ==========================================
         function drawWelcomeLayout() {
-            // VẼ ẢNH CHÂN DUNG XUỐNG DƯỚI CÙNG
             if (userImgWelcome) {
                 ctx.save();
                 
@@ -431,16 +429,15 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // Ước lượng vùng đục lỗ theo ảnh mẫu (Kích thước rộng 580, cao 780, nằm ở giữa)
+                // Kéo cao Y lên 310px và điều chỉnh kích thước để khớp chuẩn với file bg.png
                 const holeW = 580;
-                const holeH = 780;
+                const holeH = 760;
                 const holeX = (canvas.width - holeW) / 2; 
-                const holeY = 400; 
+                const holeY = 310; 
                 
-                // Khóa ảnh vào Clip Mask để không bao giờ bị lem ra ngoài viền đen
                 ctx.beginPath();
                 if(ctx.roundRect) {
-                    ctx.roundRect(holeX, holeY, holeW, holeH, 15);
+                    ctx.roundRect(holeX, holeY, holeW, holeH, 20); // Tạo bo góc mượt
                 } else {
                     ctx.rect(holeX, holeY, holeW, holeH);
                 }
@@ -458,7 +455,6 @@
                 ctx.restore();
             }
 
-            // VẼ NỀN bg.png LÊN TRÊN
             if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
                 ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
             }
@@ -474,7 +470,6 @@
 
             ctx.fillStyle = '#ffffff'; 
 
-            // Tên Nhân sự (Nằm giữa hộp Glassmorphism)
             ctx.textAlign = 'center';
             let nameFontSize = 48; 
             const maxWNameWidth = 800; 
@@ -484,19 +479,17 @@
                 nameFontSize--;
                 ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1140);
+            ctx.fillText(fullName, canvas.width / 2, 1175); 
 
-            // Phòng ban & Chi nhánh
             ctx.font = '400 24px "Barlow"'; 
-            ctx.fillText(department, canvas.width / 2, 1185);
-            ctx.fillText(branch, canvas.width / 2, 1220);
+            ctx.fillText(department, canvas.width / 2, 1220); 
+            ctx.fillText(branch, canvas.width / 2, 1255); 
 
-            // Chi tiết dưới cùng
             ctx.font = '400 24px "Barlow"';
             const labelX = 200;
             const valueX = 880; 
-            let startY = 1315;
-            const lineSpacing = 42;
+            let startY = 1340; 
+            const lineSpacing = 34; 
 
             ctx.textAlign = 'left'; 
             ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
@@ -708,7 +701,6 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
-        // TẢI ẢNH XUỐNG
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
