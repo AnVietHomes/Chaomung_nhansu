@@ -180,7 +180,7 @@
             <div class="form-group"><label>Ảnh chân dung:</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
             
             <div class="form-group">
-                <label>Căn chỉnh ảnh Chào mừng (Zoom | Lên/Xuống | Trái/Phải):</label>
+                <label>Căn chỉnh ảnh (Zoom | Lên/Xuống | Trái/Phải):</label>
                 <div style="display: flex; gap: 5px;">
                     <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ">
                         <span class="input-group-addon" style="font-size: 11px;">🔍</span>
@@ -223,7 +223,7 @@
             <div class="form-group"><label>Ảnh nhân sự:</label><input type="file" id="uploadImageBirthday" accept="image/*"></div>
             
             <div class="form-group">
-                <label>Căn chỉnh ảnh Sinh nhật (Zoom | Lên/Xuống | Trái/Phải):</label>
+                <label>Căn chỉnh ảnh (Zoom | Lên/Xuống | Trái/Phải):</label>
                 <div style="display: flex; gap: 5px;">
                     <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ">
                         <span class="input-group-addon" style="font-size: 11px;">🔍</span>
@@ -379,7 +379,6 @@
             
             document.getElementById('i_fullName_1').value = cleanedName;
             document.getElementById('i_empCode_1').value = document.getElementById('w_empCode').value;
-            // Chức vụ của welcome được coi tương đương chức danh của thẻ NV
             document.getElementById('i_pos_1').value = document.getElementById('w_position').value;
         }
 
@@ -419,7 +418,7 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG (ĐÃ FIX TỌA ĐỘ VÀ KÍCH THƯỚC CLIP MASK)
+        // LAYOUT 1: CHÀO MỪNG 
         // ==========================================
         function drawWelcomeLayout() {
             if (userImgWelcome) {
@@ -429,15 +428,15 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // Kéo cao Y lên 310px và điều chỉnh kích thước để khớp chuẩn với file bg.png
-                const holeW = 580;
-                const holeH = 760;
-                const holeX = (canvas.width - holeW) / 2; 
-                const holeY = 310; 
+                // TỌA ĐỘ VÀ KÍCH THƯỚC CLIP MASK HOÀN HẢO DỰA TRÊN ZOOM CỦA NGƯỜI DÙNG
+                const holeW = 480;
+                const holeH = 630;
+                const holeX = (canvas.width - holeW) / 2; // Canh giữa = 300
+                const holeY = 355; 
                 
                 ctx.beginPath();
                 if(ctx.roundRect) {
-                    ctx.roundRect(holeX, holeY, holeW, holeH, 20); // Tạo bo góc mượt
+                    ctx.roundRect(holeX, holeY, holeW, holeH, 20); 
                 } else {
                     ctx.rect(holeX, holeY, holeW, holeH);
                 }
@@ -470,6 +469,7 @@
 
             ctx.fillStyle = '#ffffff'; 
 
+            // CỤM TÊN & PHÒNG BAN: Đã đẩy cao lên 40px để nằm chính giữa khối kính
             ctx.textAlign = 'center';
             let nameFontSize = 48; 
             const maxWNameWidth = 800; 
@@ -479,17 +479,18 @@
                 nameFontSize--;
                 ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1175); 
+            ctx.fillText(fullName, canvas.width / 2, 1135); // Đẩy lên (Cũ: 1175)
 
             ctx.font = '400 24px "Barlow"'; 
-            ctx.fillText(department, canvas.width / 2, 1220); 
-            ctx.fillText(branch, canvas.width / 2, 1255); 
+            ctx.fillText(department, canvas.width / 2, 1180); // Đẩy lên (Cũ: 1220)
+            ctx.fillText(branch, canvas.width / 2, 1210); // Đẩy lên (Cũ: 1255)
 
+            // CỤM THÔNG TIN CHI TIẾT: Đã đẩy cao lên 50px và giảm khoảng cách các dòng
             ctx.font = '400 24px "Barlow"';
             const labelX = 200;
             const valueX = 880; 
-            let startY = 1340; 
-            const lineSpacing = 34; 
+            let startY = 1290; // Đẩy lên (Cũ: 1340)
+            const lineSpacing = 34; // Khoảng cách khít lại
 
             ctx.textAlign = 'left'; 
             ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
