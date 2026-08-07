@@ -314,6 +314,7 @@
             `;
         }
 
+        // HÀM ĐỊNH DẠNG NGÀY THÁNG THÔNG MINH
         function formatBirthdayInput(e) {
             let input = e.target;
             let value = input.value.replace(/\D/g, '');
@@ -422,7 +423,7 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG 
+        // LAYOUT 1: CHÀO MỪNG (ĐÃ FIX KHUNG ẢNH CHÍNH XÁC 100%)
         // ==========================================
         function drawWelcomeLayout() {
             if (userImgWelcome) {
@@ -432,12 +433,16 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // NỚI RỘNG KHUNG CLIP MASK ĐỂ CHÌM HẲN ẢNH XUỐNG DƯỚI LỚP KÍNH BG.PNG
-                // Tăng 20-30px mỗi chiều để xóa bỏ hoàn toàn ranh giới viền trắng
-                const holeW = 700; // Rộng hơn mức cũ (660) để lấp kín 2 bên
-                const holeH = 950; // Dài xuống tận Y: 1510 (Che khuất mức 1484)
+                // Dùng tỷ lệ đo đạc thực tế của người dùng: Top = 600, Bottom = 1484.
+                // Scale thông số này dựa trên chiều cao gốc của bg.png để luôn chính xác bất chấp độ phân giải.
+                const natH = assets.welcomeBg.naturalHeight || 1536;
+                const scaleY = canvas.height / natH;
+                
+                const holeY = 600 * scaleY; 
+                const holeH = (1484 - 600) * scaleY; // Tính ra chính xác chiều cao vùng cắt = 884px (nếu natH=1536)
+                
+                const holeW = 670 * (canvas.width / 1080); // Tỷ lệ chiều rộng chuẩn 3:4
                 const holeX = (canvas.width - holeW) / 2; 
-                const holeY = 580; // Bắt đầu cao hơn 1 chút (Vượt mức 600)
                 
                 ctx.beginPath();
                 if(ctx.roundRect) {
