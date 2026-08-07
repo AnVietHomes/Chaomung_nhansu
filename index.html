@@ -479,17 +479,17 @@
                 nameFontSize--;
                 ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
             }
-            ctx.fillText(fullName, canvas.width / 2, 1135); // Đẩy lên (Cũ: 1175)
+            ctx.fillText(fullName, canvas.width / 2, 1152); // Đẩy lên (Cũ: 1175)
 
             ctx.font = '400 24px "Barlow"'; 
-            ctx.fillText(department, canvas.width / 2, 1180); // Đẩy lên (Cũ: 1220)
-            ctx.fillText(branch, canvas.width / 2, 1210); // Đẩy lên (Cũ: 1255)
+            ctx.fillText(department, canvas.width / 2, 1175); // Đẩy lên (Cũ: 1220)
+            ctx.fillText(branch, canvas.width / 2, 1235); // Đẩy lên (Cũ: 1255)
 
             // CỤM THÔNG TIN CHI TIẾT: Đã đẩy cao lên 50px và giảm khoảng cách các dòng
             ctx.font = '400 24px "Barlow"';
             const labelX = 200;
             const valueX = 880; 
-            let startY = 1290; // Đẩy lên (Cũ: 1340)
+            let startY = 1310; // Đẩy lên (Cũ: 1340)
             const lineSpacing = 34; // Khoảng cách khít lại
 
             ctx.textAlign = 'left'; 
