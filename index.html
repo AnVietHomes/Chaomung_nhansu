@@ -177,14 +177,33 @@
         <!-- FORM CHÀO MỪNG -->
         <div id="welcome-form" class="tab-content active">
             <button class="btn-download" onclick="downloadImage('welcome')">⬇ TẢI ẢNH CHÀO MỪNG (+THẺ NV)</button>
-            <div class="form-group"><label>Ảnh chân dung (Tỉ lệ 3:4 hoặc 4:5):</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
-            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. ĐỐ ANH ĐOÁN ĐƯỢC" oninput="syncToIdCard(); drawCanvas()"></div>
+            <div class="form-group"><label>Ảnh chân dung:</label><input type="file" id="uploadImageWelcome" accept="image/*"></div>
+            
+            <div class="form-group">
+                <label>Căn chỉnh ảnh Chào mừng (Zoom | Lên/Xuống | Trái/Phải):</label>
+                <div style="display: flex; gap: 5px;">
+                    <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ">
+                        <span class="input-group-addon" style="font-size: 11px;">🔍</span>
+                        <input type="number" id="w_zoom" value="100" step="2" oninput="drawCanvas()">
+                    </div>
+                    <div class="input-group" style="flex: 1;" title="Kéo Lên / Xuống">
+                        <span class="input-group-addon" style="font-size: 11px;">↕️</span>
+                        <input type="number" id="w_offsetY" value="0" step="5" oninput="drawCanvas()">
+                    </div>
+                    <div class="input-group" style="flex: 1;" title="Kéo Trái / Phải">
+                        <span class="input-group-addon" style="font-size: 11px;">↔️</span>
+                        <input type="number" id="w_offsetX" value="0" step="5" oninput="drawCanvas()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group"><label>Họ và Tên:</label><input type="text" id="w_fullName" value="MR. ĐỖ ANH ĐOÁN ĐƯỢC" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Phòng Ban:</label><input type="text" id="w_department" value="PHÒNG KINH DOANH AV1" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Chi nhánh / Nơi làm việc:</label><select id="w_branch" onchange="drawCanvas()"><option value="AN VIỆT HOMES HỘI SỞ">AN VIỆT HOMES HỘI SỞ</option><option value="AN VIỆT HOMES CNQN">AN VIỆT HOMES CNQN</option></select></div>
-            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="000" oninput="syncToIdCard(); drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
-            <div class="form-group"><label>Ngày vào công ty:</label><input type="text" id="w_joinDate" value="12/06/2026" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="04/11/1988" oninput="drawCanvas()"></div>
-            <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="Chuyên viên Kinh doanh" oninput="syncToIdCard(); drawCanvas()"></div>
+            <div class="form-group"><label>Mã nhân viên:</label><div class="input-group"><span class="input-group-addon">AVH</span><input type="text" id="w_empCode" value="001" oninput="syncToIdCard(); drawCanvas()" placeholder="Nhập mã số..." maxlength="5"></div></div>
+            <div class="form-group"><label>Ngày vào công ty:</label><input type="text" id="w_joinDate" value="12/12/2026" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Ngày sinh:</label><input type="text" id="w_dob" value="12/12/2000" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Chức vụ:</label><input type="text" id="w_position" value="CHUYÊN VIÊN KINH DOANH" oninput="syncToIdCard(); drawCanvas()"></div>
             <div class="form-group"><label>Khối kinh doanh:</label><input type="text" id="w_businessBlock" value="A1" oninput="drawCanvas()"></div>
         </div>
 
@@ -221,7 +240,7 @@
                 </div>
             </div>
 
-            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐỐ ANH ĐOÁN ĐƯỢC" oninput="drawCanvas()"></div>
+            <div class="form-group"><label>Họ và Tên (Có chức danh):</label><input type="text" id="b_fullName" value="MR. ĐỖ ANH ĐOÁN ĐƯỢC" oninput="drawCanvas()"></div>
             <div class="form-group"><label>Phòng ban - Khối:</label><input type="text" id="b_department" value="PHÒNG KINH DOANH AV11" oninput="drawCanvas()"></div>
             <div class="form-group">
                 <label>Ngày tháng sinh nhật (Nhập số tự động ra /):</label>
@@ -257,7 +276,8 @@
             birthdayBgDark: new Image()
         };
 
-        assets.welcomeBg.src = 'image/bg.jpg';
+        // File nền chào mừng đã được update thành định dạng png đục lỗ
+        assets.welcomeBg.src = 'image/bg.png';
         assets.idCardBg.src = 'image/bgnv.png'; 
         assets.birthdayBgLight.src = 'image/nensang.png';
         assets.birthdayBgDark.src = 'image/nentoi.png';
@@ -318,7 +338,12 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 userImgWelcome = new Image();
-                userImgWelcome.onload = function() { drawCanvas(); }
+                userImgWelcome.onload = function() { 
+                    document.getElementById('w_zoom').value = 100;
+                    document.getElementById('w_offsetX').value = 0;
+                    document.getElementById('w_offsetY').value = 0;
+                    drawCanvas(); 
+                }
                 userImgWelcome.src = event.target.result;
 
                 let imgForCard = new Image();
@@ -354,6 +379,7 @@
             
             document.getElementById('i_fullName_1').value = cleanedName;
             document.getElementById('i_empCode_1').value = document.getElementById('w_empCode').value;
+            // Chức vụ của welcome được coi tương đương chức danh của thẻ NV
             document.getElementById('i_pos_1').value = document.getElementById('w_position').value;
         }
 
@@ -370,17 +396,14 @@
             document.getElementById(`${tabName}-form`).classList.add('active');
 
             if (tabName === 'welcome') {
-                canvas.width = 1080; canvas.height = 1080;
+                // Đổi sang tỷ lệ khung dọc mới cho Chào mừng
+                canvas.width = 1080; canvas.height = 1536;
             } else if (tabName === 'birthday') {
                 canvas.width = 1080; canvas.height = 1350; 
             } else if (tabName === 'idcard') {
                 canvas.width = 3508; canvas.height = 2480; 
             }
             drawCanvas();
-        }
-
-        function roundRect(ctx, x, y, width, height, radius) {
-            ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath();
         }
 
         function drawCanvas() {
@@ -396,20 +419,49 @@
             }
         }
 
+        // ==========================================
+        // LAYOUT 1: CHÀO MỪNG (CẬP NHẬT TỶ LỆ DỌC MỚI)
+        // ==========================================
         function drawWelcomeLayout() {
-            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
+            // VẼ ẢNH CHÂN DUNG XUỐNG DƯỚI CÙNG
             if (userImgWelcome) {
                 ctx.save();
-                const imgX = 68, imgY = 275, imgW = 415, imgH = 570;
-                roundRect(ctx, imgX, imgY, imgW, imgH, 20); ctx.clip();
-                const scale = Math.max(imgW / userImgWelcome.width, imgH / userImgWelcome.height);
-                const x = (imgW / 2) - (userImgWelcome.width / 2) * scale;
-                const y = (imgH / 2) - (userImgWelcome.height / 2) * scale;
-                ctx.drawImage(userImgWelcome, imgX + x, imgY + y, userImgWelcome.width * scale, userImgWelcome.height * scale);
+                
+                let wZoom = parseFloat(document.getElementById('w_zoom').value) / 100;
+                let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
+                let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
+
+                // Ước lượng vùng đục lỗ theo ảnh mẫu (Kích thước rộng 580, cao 780, nằm ở giữa)
+                const holeW = 580;
+                const holeH = 780;
+                const holeX = (canvas.width - holeW) / 2; 
+                const holeY = 400; 
+                
+                // Khóa ảnh vào Clip Mask để không bao giờ bị lem ra ngoài viền đen
+                ctx.beginPath();
+                if(ctx.roundRect) {
+                    ctx.roundRect(holeX, holeY, holeW, holeH, 15);
+                } else {
+                    ctx.rect(holeX, holeY, holeW, holeH);
+                }
+                ctx.clip();
+
+                const baseScale = Math.max(holeW / userImgWelcome.width, holeH / userImgWelcome.height);
+                const finalScale = baseScale * wZoom;
+                
+                const drawW = userImgWelcome.width * finalScale;
+                const drawH = userImgWelcome.height * finalScale;
+                const drawX = holeX + (holeW - drawW) / 2 + wOffsetX;
+                const drawY = holeY + (holeH - drawH) / 2 + wOffsetY;
+                
+                ctx.drawImage(userImgWelcome, drawX, drawY, drawW, drawH);
                 ctx.restore();
             }
 
-            ctx.fillStyle = '#21c1e0'; roundRect(ctx, 525, 440, 510, 165, 15); ctx.fill();
+            // VẼ NỀN bg.png LÊN TRÊN
+            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
+                ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
+            }
 
             const fullName = document.getElementById('w_fullName').value.toUpperCase();
             const department = document.getElementById('w_department').value.toUpperCase();
@@ -420,18 +472,50 @@
             const position = document.getElementById('w_position').value.toUpperCase();
             const businessBlock = document.getElementById('w_businessBlock').value.toUpperCase();
 
-            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-            let nameFontSize = 44; ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            while (ctx.measureText(fullName).width > 470 && nameFontSize > 15) { nameFontSize--; ctx.font = 'bold ' + nameFontSize + 'px "Barlow"'; }
-            ctx.fillText(fullName, 780, 505);
+            ctx.fillStyle = '#ffffff'; 
 
-            ctx.font = '400 24px "Barlow"'; ctx.fillText(department, 780, 550); ctx.fillText(branch, 780, 582);
-            ctx.font = '400 22px "Barlow"';
-            const labelX = 540, valueX = 1025, lineSpacing = 42; let startY = 650;
-            ctx.textAlign = 'left'; ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing); ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2); ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3); ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
-            ctx.textAlign = 'right'; ctx.fillText(empCode, valueX, startY); ctx.fillText(joinDate, valueX, startY + lineSpacing); ctx.fillText(dob, valueX, startY + lineSpacing * 2); ctx.fillText(position, valueX, startY + lineSpacing * 3); ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
+            // Tên Nhân sự (Nằm giữa hộp Glassmorphism)
+            ctx.textAlign = 'center';
+            let nameFontSize = 48; 
+            const maxWNameWidth = 800; 
+            ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+            
+            while (ctx.measureText(fullName).width > maxWNameWidth && nameFontSize > 25) {
+                nameFontSize--;
+                ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+            }
+            ctx.fillText(fullName, canvas.width / 2, 1140);
+
+            // Phòng ban & Chi nhánh
+            ctx.font = '400 24px "Barlow"'; 
+            ctx.fillText(department, canvas.width / 2, 1185);
+            ctx.fillText(branch, canvas.width / 2, 1220);
+
+            // Chi tiết dưới cùng
+            ctx.font = '400 24px "Barlow"';
+            const labelX = 200;
+            const valueX = 880; 
+            let startY = 1315;
+            const lineSpacing = 42;
+
+            ctx.textAlign = 'left'; 
+            ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
+            ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing); 
+            ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2); 
+            ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3); 
+            ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
+            
+            ctx.textAlign = 'right'; 
+            ctx.fillText(empCode, valueX, startY); 
+            ctx.fillText(joinDate, valueX, startY + lineSpacing); 
+            ctx.fillText(dob, valueX, startY + lineSpacing * 2); 
+            ctx.fillText(position, valueX, startY + lineSpacing * 3); 
+            ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
         }
 
+        // ==========================================
+        // LAYOUT 2: SINH NHẬT
+        // ==========================================
         function drawBirthdayLayout() {
             const isDarkTheme = document.getElementById('b_theme_toggle').checked;
             const bgImage = isDarkTheme ? assets.birthdayBgDark : assets.birthdayBgLight;
@@ -474,7 +558,6 @@
 
             ctx.fillStyle = '#ffffff'; 
             
-            // Xử lý đổ bóng động thông minh (Chỉ áp dụng cho Tên và Phòng Ban)
             if (!isDarkTheme) {
                 ctx.shadowColor = 'rgba(210, 100, 50, 0.5)'; 
             } else {
@@ -504,18 +587,18 @@
             }
             ctx.fillText(department, canvas.width / 2, 1140);
 
-            // ==========================================
-            // TẮT ĐỔ BÓNG VÀ VẼ NGÀY THÁNG
-            // ==========================================
             ctx.shadowColor = 'transparent'; 
 
             ctx.textAlign = 'center';
             ctx.font = 'normal 90px "SVN-IvyMode-Regular"'; 
             const dateX = 850; 
             ctx.fillText(dayPart, dateX, 835);  
-            ctx.fillText(monthPart, dateX, 925); 
+            ctx.fillText(monthPart, dateX, 912); 
         }
 
+        // ==========================================
+        // LAYOUT 3: THẺ NHÂN VIÊN
+        // ==========================================
         function drawA4IdCardsLayout() {
             const cardW = 638; 
             const cardH = 1004; 
@@ -625,6 +708,7 @@
             if(position) ctx.fillText(position, 480, row2_Y);
         }
 
+        // TẢI ẢNH XUỐNG
         function downloadImage(type) {
             if (type === 'welcome') {
                 const w_empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
