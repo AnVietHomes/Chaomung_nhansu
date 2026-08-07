@@ -429,14 +429,14 @@
             if (userImgWelcome) {
                 ctx.save();
                 
-                let wZoom = parseFloat(document.getElementById('w_zoom').value) / 100;
+                let wZoom = parseFloat(document.getElementById('w_zoom').value) / 70;
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
                 // NỚI RỘNG VÀ KÉO DÀI CLIP MASK ĐỂ KHÔNG BAO GIỜ LỘ VIỀN TRẮNG
                 // Top kéo hẳn lên Y: 250, Bottom đâm sâu xuống Y: 1100, mở rộng hai bên
                 const holeW = 750; // Kéo tràn sang 2 bên
-                const holeH = 850; // Kéo dài để che hết phần kính mờ bên dưới
+                const holeH = 650; // Kéo dài để che hết phần kính mờ bên dưới
                 const holeX = (canvas.width - holeW) / 2; 
                 const holeY = 250; 
                 
