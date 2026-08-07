@@ -439,7 +439,8 @@
                 const scaleY = canvas.height / natH;
                 
                 const holeY = 600 * scaleY; 
-                const holeH = (1484 - 600) * scaleY; // Tính ra chính xác chiều cao vùng cắt = 884px (nếu natH=1536)
+                // CỘNG THÊM 5PX VÀO CHIỀU CAO LỖ THỦNG ĐỂ FIX LỖI VIỀN TRẮNG
+                const holeH = ((1484 - 600) * scaleY) + 5; // Tăng thêm 5px an toàn
                 
                 const holeW = 670 * (canvas.width / 1080); // Tỷ lệ chiều rộng chuẩn 3:4
                 const holeX = (canvas.width - holeW) / 2; 
