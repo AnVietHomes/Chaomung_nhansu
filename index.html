@@ -184,11 +184,13 @@
                 <div style="display: flex; gap: 5px;">
                     <div class="input-group" style="flex: 1;" title="Phóng to / Thu nhỏ">
                         <span class="input-group-addon" style="font-size: 11px;">🔍</span>
-                        <input type="number" id="w_zoom" value="100" step="2" oninput="drawCanvas()">
+                        <!-- Đổi Zoom mặc định ban đầu thành 75 -->
+                        <input type="number" id="w_zoom" value="75" step="2" oninput="drawCanvas()">
                     </div>
                     <div class="input-group" style="flex: 1;" title="Kéo Lên / Xuống">
                         <span class="input-group-addon" style="font-size: 11px;">↕️</span>
-                        <input type="number" id="w_offsetY" value="0" step="5" oninput="drawCanvas()">
+                        <!-- Đổi vị trí mặc định ban đầu kéo xuống 55px -->
+                        <input type="number" id="w_offsetY" value="55" step="5" oninput="drawCanvas()">
                     </div>
                     <div class="input-group" style="flex: 1;" title="Kéo Trái / Phải">
                         <span class="input-group-addon" style="font-size: 11px;">↔️</span>
@@ -344,9 +346,10 @@
             reader.onload = function(event) {
                 userImgWelcome = new Image();
                 userImgWelcome.onload = function() { 
-                    document.getElementById('w_zoom').value = 100;
+                    // Set cứng mức zoom 75% và kéo xuống 55px khi người dùng tải ảnh mới lên
+                    document.getElementById('w_zoom').value = 75;
                     document.getElementById('w_offsetX').value = 0;
-                    document.getElementById('w_offsetY').value = 0;
+                    document.getElementById('w_offsetY').value = 55;
                     drawCanvas(); 
                 }
                 userImgWelcome.src = event.target.result;
@@ -423,7 +426,7 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG (CẬP NHẬT KÍCH THƯỚC CLIP MASK)
+        // LAYOUT 1: CHÀO MỪNG (THAY ĐỔI CÁCH TÍNH TÂM ẢNH)
         // ==========================================
         function drawWelcomeLayout() {
             if (userImgWelcome) {
@@ -433,28 +436,36 @@
                 let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
                 let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // NỚI RỘNG VÀ KÉO DÀI CLIP MASK ĐỂ KHÔNG BAO GIỜ LỘ VIỀN TRẮNG
-                // Top kéo hẳn lên Y: 250, Bottom đâm sâu xuống Y: 1100, mở rộng hai bên
-                const holeW = 750; // Kéo tràn sang 2 bên
-                const holeH = 850; // Kéo dài để che hết phần kính mờ bên dưới
-                const holeX = (canvas.width - holeW) / 2; 
-                const holeY = 250; 
+                // Khung Mask vẫn rất rộng và sâu để chống lem viền trắng
+                const maskW = 750;
+                const maskH = 850;
+                const maskX = (canvas.width - maskW) / 2; 
+                const maskY = 250; 
                 
                 ctx.beginPath();
                 if(ctx.roundRect) {
-                    ctx.roundRect(holeX, holeY, holeW, holeH, 20); 
+                    ctx.roundRect(maskX, maskY, maskW, maskH, 20); 
                 } else {
-                    ctx.rect(holeX, holeY, holeW, holeH);
+                    ctx.rect(maskX, maskY, maskW, maskH);
                 }
                 ctx.clip();
 
-                const baseScale = Math.max(holeW / userImgWelcome.width, holeH / userImgWelcome.height);
+                // NHƯNG thuật toán tính Tỷ lệ và Tâm sẽ dựa trên "khung hiển thị thật" của kính Glassmorphism
+                const visibleW = 580;  // Bề rộng phần lỗ thủng hở ra
+                const visibleH = 480;  // Chiều cao phần lỗ đục hở ra phía trên mặt kính (từ Y 600 đến 1080)
+                const visibleX = (canvas.width - visibleW) / 2;
+                const visibleY = 600;  // Đỉnh của lỗ hở thực tế
+
+                // Tính baseScale dựa trên khung nhìn thấy, giúp ảnh không bị phình to vô lý
+                const baseScale = Math.max(visibleW / userImgWelcome.width, visibleH / userImgWelcome.height);
                 const finalScale = baseScale * wZoom;
                 
                 const drawW = userImgWelcome.width * finalScale;
                 const drawH = userImgWelcome.height * finalScale;
-                const drawX = holeX + (holeW - drawW) / 2 + wOffsetX;
-                const drawY = holeY + (holeH - drawH) / 2 + wOffsetY;
+                
+                // Canh tâm ảnh chân dung vào chính giữa phần cửa sổ hở ra (không phải chính giữa Mask khổng lồ nữa)
+                const drawX = visibleX + (visibleW - drawW) / 2 + wOffsetX;
+                const drawY = visibleY + (visibleH - drawH) / 2 + wOffsetY;
                 
                 ctx.drawImage(userImgWelcome, drawX, drawY, drawW, drawH);
                 ctx.restore();
