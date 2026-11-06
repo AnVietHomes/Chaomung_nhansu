@@ -423,99 +423,96 @@
         }
 
         // ==========================================
-        // LAYOUT 1: CHÀO MỪNG (ĐÃ FIX KHUNG ẢNH CHÍNH XÁC 100%)
-        // ==========================================
-        function drawWelcomeLayout() {
-            if (userImgWelcome) {
-                ctx.save();
-                
-                let wZoom = parseFloat(document.getElementById('w_zoom').value) / 100;
-                let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
-                let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
+// LAYOUT 1: CHÀO MỪNG (ĐÃ FIX KÉO DÀI ĐÁY KHUNG ẢNH)
+// ==========================================
+function drawWelcomeLayout() {
+    if (userImgWelcome) {
+        ctx.save();
+        
+        let wZoom = parseFloat(document.getElementById('w_zoom').value) / 100;
+        let wOffsetX = parseFloat(document.getElementById('w_offsetX').value);
+        let wOffsetY = parseFloat(document.getElementById('w_offsetY').value);
 
-                // Dùng tỷ lệ đo đạc thực tế của người dùng: Top = 600, Bottom = 1484.
-                // Scale thông số này dựa trên chiều cao gốc của bg.png để luôn chính xác bất chấp độ phân giải.
-                const natH = assets.welcomeBg.naturalHeight || 1536;
-                const scaleY = canvas.height / natH;
-                
-                const holeY = 600 * scaleY; 
-                // CỘNG THÊM 5PX VÀO CHIỀU CAO LỖ THỦNG ĐỂ FIX LỖI VIỀN TRẮNG
-                const holeH = ((1484 - 600) * scaleY) + 5; // Tăng thêm 5px an toàn
-                
-                const holeW = 670 * (canvas.width / 1080); // Tỷ lệ chiều rộng chuẩn 3:4
-                const holeX = (canvas.width - holeW) / 2; 
-                
-                ctx.beginPath();
-                if(ctx.roundRect) {
-                    ctx.roundRect(holeX, holeY, holeW, holeH, 30); 
-                } else {
-                    ctx.rect(holeX, holeY, holeW, holeH);
-                }
-                ctx.clip();
-
-                const baseScale = Math.max(holeW / userImgWelcome.width, holeH / userImgWelcome.height);
-                const finalScale = baseScale * wZoom;
-                
-                const drawW = userImgWelcome.width * finalScale;
-                const drawH = userImgWelcome.height * finalScale;
-                const drawX = holeX + (holeW - drawW) / 2 + wOffsetX;
-                const drawY = holeY + (holeH - drawH) / 2 + wOffsetY;
-                
-                ctx.drawImage(userImgWelcome, drawX, drawY, drawW, drawH);
-                ctx.restore();
-            }
-
-            if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
-                ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
-            }
-
-            const fullName = document.getElementById('w_fullName').value.toUpperCase();
-            const department = document.getElementById('w_department').value.toUpperCase();
-            const branch = document.getElementById('w_branch').value.toUpperCase();
-            const empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
-            const joinDate = document.getElementById('w_joinDate').value;
-            const dob = document.getElementById('w_dob').value;
-            const position = document.getElementById('w_position').value.toUpperCase();
-            const businessBlock = document.getElementById('w_businessBlock').value.toUpperCase();
-
-            ctx.fillStyle = '#ffffff'; 
-
-            ctx.textAlign = 'center';
-            let nameFontSize = 48; 
-            const maxWNameWidth = 800; 
-            ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            
-            while (ctx.measureText(fullName).width > maxWNameWidth && nameFontSize > 25) {
-                nameFontSize--;
-                ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
-            }
-            ctx.fillText(fullName, canvas.width / 2, 1160); 
-
-            ctx.font = '400 24px "Barlow"'; 
-            ctx.fillText(department, canvas.width / 2, 1205); 
-            ctx.fillText(branch, canvas.width / 2, 1235); 
-
-            ctx.font = '400 24px "Barlow"';
-            const labelX = 200;
-            const valueX = 880; 
-            let startY = 1320; 
-            const lineSpacing = 34; 
-
-            ctx.textAlign = 'left'; 
-            ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
-            ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing); 
-            ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2); 
-            ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3); 
-            ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
-            
-            ctx.textAlign = 'right'; 
-            ctx.fillText(empCode, valueX, startY); 
-            ctx.fillText(joinDate, valueX, startY + lineSpacing); 
-            ctx.fillText(dob, valueX, startY + lineSpacing * 2); 
-            ctx.fillText(position, valueX, startY + lineSpacing * 3); 
-            ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
+        const natH = assets.welcomeBg.naturalHeight || 1536;
+        const scaleY = canvas.height / natH;
+        
+        const holeY = 600 * scaleY; 
+        // Đã mở rộng đáy vùng cắt xuống sâu hơn (1500 thay vì 1484) để lấp đầy phần viền trắng bên dưới
+        const holeH = (1500 - 600) * scaleY; 
+        
+        const holeW = 670 * (canvas.width / 1080); // Tỷ lệ chiều rộng chuẩn 3:4
+        const holeX = (canvas.width - holeW) / 2; 
+        
+        ctx.beginPath();
+        if(ctx.roundRect) {
+            ctx.roundRect(holeX, holeY, holeW, holeH, 30); 
+        } else {
+            ctx.rect(holeX, holeY, holeW, holeH);
         }
+        ctx.clip();
 
+        const baseScale = Math.max(holeW / userImgWelcome.width, holeH / userImgWelcome.height);
+        const finalScale = baseScale * wZoom;
+        
+        const drawW = userImgWelcome.width * finalScale;
+        const drawH = userImgWelcome.height * finalScale;
+        const drawX = holeX + (holeW - drawW) / 2 + wOffsetX;
+        const drawY = holeY + (holeH - drawH) / 2 + wOffsetY;
+        
+        ctx.drawImage(userImgWelcome, drawX, drawY, drawW, drawH);
+        ctx.restore();
+    }
+
+    if (assets.welcomeBg.complete && assets.welcomeBg.naturalHeight !== 0) {
+        ctx.drawImage(assets.welcomeBg, 0, 0, canvas.width, canvas.height);
+    }
+
+    const fullName = document.getElementById('w_fullName').value.toUpperCase();
+    const department = document.getElementById('w_department').value.toUpperCase();
+    const branch = document.getElementById('w_branch').value.toUpperCase();
+    const empCode = "AVH" + document.getElementById('w_empCode').value.toUpperCase();
+    const joinDate = document.getElementById('w_joinDate').value;
+    const dob = document.getElementById('w_dob').value;
+    const position = document.getElementById('w_position').value.toUpperCase();
+    const businessBlock = document.getElementById('w_businessBlock').value.toUpperCase();
+
+    ctx.fillStyle = '#ffffff'; 
+
+    ctx.textAlign = 'center';
+    let nameFontSize = 48; 
+    const maxWNameWidth = 800; 
+    ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+    
+    while (ctx.measureText(fullName).width > maxWNameWidth && nameFontSize > 25) {
+        nameFontSize--;
+        ctx.font = 'bold ' + nameFontSize + 'px "Barlow"';
+    }
+    ctx.fillText(fullName, canvas.width / 2, 1160); 
+
+    ctx.font = '400 24px "Barlow"'; 
+    ctx.fillText(department, canvas.width / 2, 1205); 
+    ctx.fillText(branch, canvas.width / 2, 1235); 
+
+    ctx.font = '400 24px "Barlow"';
+    const labelX = 200;
+    const valueX = 880; 
+    let startY = 1320; 
+    const lineSpacing = 34; 
+
+    ctx.textAlign = 'left'; 
+    ctx.fillText('MÃ NHÂN VIÊN:', labelX, startY); 
+    ctx.fillText('NGÀY VÀO CÔNG TY:', labelX, startY + lineSpacing); 
+    ctx.fillText('NGÀY SINH:', labelX, startY + lineSpacing * 2); 
+    ctx.fillText('CHỨC VỤ:', labelX, startY + lineSpacing * 3); 
+    ctx.fillText('KHỐI KINH DOANH:', labelX, startY + lineSpacing * 4);
+    
+    ctx.textAlign = 'right'; 
+    ctx.fillText(empCode, valueX, startY); 
+    ctx.fillText(joinDate, valueX, startY + lineSpacing); 
+    ctx.fillText(dob, valueX, startY + lineSpacing * 2); 
+    ctx.fillText(position, valueX, startY + lineSpacing * 3); 
+    ctx.fillText(businessBlock, valueX, startY + lineSpacing * 4);
+}
         // ==========================================
         // LAYOUT 2: SINH NHẬT
         // ==========================================
